@@ -1,14 +1,62 @@
+import { useState } from "react";
+
 const timeFormatter = new Intl.DateTimeFormat("en", {
   hour: "numeric",
   minute: "2-digit",
 });
 
+const getDownloadName = (message) => {
+  if (message.imageName) {
+    return message.imageName;
+  }
+
+  const extension = message.imageUrl?.split(".").pop()?.split("?")[0] || "jpg";
+  return `chatify-photo-${message._id || Date.now()}.${extension}`;
+};
+
+async function downloadImage(url, filename) {
+  const response = await fetch(url, {
+    credentials: "omit",
+  });
+
+  if (!response.ok) {
+    throw new Error("Unable to download image");
+  }
+
+  const blob = await response.blob();
+  const objectUrl = window.URL.createObjectURL(blob);
+  const link = document.createElement("a");
+
+  link.href = objectUrl;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.URL.revokeObjectURL(objectUrl);
+}
+
 export default function MessageBubble({ message, currentUser }) {
+  const [isDownloading, setIsDownloading] = useState(false);
   const isOwnMessage = message.sender === currentUser?.username;
   const sentAt = message?.createdAt
     ? timeFormatter.format(new Date(message.createdAt))
     : "Now";
   const hasImage = Boolean(message.imageUrl);
+
+  const handleDownload = async () => {
+    if (!message.imageUrl || isDownloading) {
+      return;
+    }
+
+    try {
+      setIsDownloading(true);
+      await downloadImage(message.imageUrl, getDownloadName(message));
+    } catch (_error) {
+      window.open(message.imageUrl, "_blank", "noopener,noreferrer");
+    } finally {
+      setIsDownloading(false);
+    }
+  };
 
   return (
     <div
@@ -32,14 +80,29 @@ export default function MessageBubble({ message, currentUser }) {
         ) : null}
 
         {hasImage ? (
-          <a href={message.imageUrl} target="_blank" rel="noreferrer">
-            <img
-              src={message.imageUrl}
-              alt={message.imageName || "Shared photo"}
-              className="max-h-[22rem] w-full rounded-2xl object-cover"
-              loading="lazy"
-            />
-          </a>
+          <div className="mb-3 overflow-hidden rounded-2xl border border-white/10 bg-slate-950/20">
+            <a href={message.imageUrl} target="_blank" rel="noreferrer">
+              <img
+                src={message.imageUrl}
+                alt={message.imageName || "Shared photo"}
+                className="max-h-[22rem] w-full rounded-2xl object-cover"
+                loading="lazy"
+              />
+            </a>
+
+            <div className="flex items-center justify-between gap-3 px-3 py-2">
+              <p className="truncate text-xs text-slate-200/80">
+                {message.imageName || "Shared photo"}
+              </p>
+              <button
+                type="button"
+                onClick={handleDownload}
+                className="rounded-full border border-white/10 bg-white/10 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-white transition hover:bg-white/15"
+              >
+                {isDownloading ? "Saving" : "Download"}
+              </button>
+            </div>
+          </div>
         ) : null}
 
         {message.text ? (
