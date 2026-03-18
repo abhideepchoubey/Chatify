@@ -1,9 +1,10 @@
 {
   "name": "chatify-backend",
   "version": "1.0.0",
-  "description": "",
+  "description": "Chatify backend API and Socket.io server",
   "main": "index.js",
   "scripts": {
+    "start": "node src/index.js",
     "dev": "nodemon src/index.js",
     "dev:server": "nodemon src/index.js",
     "dev:client": "npm --prefix ../frontend run dev",
@@ -11,10 +12,11 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "type": "module",
   "dependencies": {
     "bcryptjs": "^3.0.3",
+    "chatify-workspace": "file:..",
     "cloudinary": "^2.9.0",
     "cookie-parser": "^1.4.7",
     "cores": "^0.8.5",
