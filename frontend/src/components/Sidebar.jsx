@@ -71,7 +71,6 @@ export default function Sidebar({
   onLogout,
   isLoggingOut,
   connectionState,
-  isMobileOpen,
   onClose,
   onOpenAddFriend,
   onOpenCreateGroup,
@@ -79,29 +78,24 @@ export default function Sidebar({
   return (
     <aside
       className={[
-        "fixed inset-y-0 left-0 z-30 w-[22rem] max-w-[88vw] shrink-0 px-3 py-3 transition-transform duration-300",
-        isMobileOpen ? "translate-x-0" : "-translate-x-[105%]",
-        "sm:static sm:inset-auto sm:z-0 sm:w-[6.2rem] sm:max-w-none sm:translate-x-0 sm:px-0 sm:py-0 lg:w-80",
+        "relative z-10 w-full shrink-0 px-0 py-0",
+        "sm:static sm:z-0 sm:w-[6.2rem] lg:w-80",
       ].join(" ")}
     >
-      <div className="panel-surface flex h-full flex-col rounded-[30px] px-3 py-4 shadow-glow sm:px-2 lg:px-4">
+      <div className="panel-surface flex h-full max-h-[42vh] flex-col rounded-[30px] px-3 py-4 shadow-glow sm:max-h-none sm:px-2 lg:px-4">
         <div className="flex items-center justify-between border-b border-white/10 px-2 pb-4 sm:flex-col sm:gap-3 sm:px-1 lg:flex-row lg:gap-0 lg:px-2">
           <div className="sm:flex sm:flex-col sm:items-center lg:block">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-400 via-sky-500 to-indigo-600 text-base font-semibold text-white lg:hidden">
+            <div className="hidden h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-400 via-sky-500 to-indigo-600 text-base font-semibold text-white sm:flex lg:hidden">
               C
             </div>
-            <p className="hidden text-xs uppercase tracking-[0.32em] text-cyan-300/80 lg:block">
+            <p className="text-xs uppercase tracking-[0.32em] text-cyan-300/80 sm:hidden lg:block">
               Chatify
             </p>
-            <h1 className="mt-2 hidden font-display text-2xl font-semibold text-white lg:block">
+            <h1 className="mt-2 font-display text-2xl font-semibold text-white sm:hidden lg:block">
               Messages
             </h1>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="soft-ring inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-white/5 text-slate-300 transition hover:bg-white/10 hover:text-white sm:hidden"
-          >
+          <button type="button" onClick={onClose} className="hidden">
             <span className="text-lg leading-none">x</span>
           </button>
         </div>
@@ -143,7 +137,7 @@ export default function Sidebar({
             className="flex items-center justify-center gap-2 rounded-[20px] border border-white/10 bg-white/5 px-3 py-3 text-sm font-medium text-white transition hover:bg-white/10"
           >
             <UserPlusIcon />
-            <span className="hidden lg:inline">Add friend</span>
+            <span className="sm:hidden lg:inline">Add friend</span>
           </button>
           <button
             type="button"
@@ -152,11 +146,11 @@ export default function Sidebar({
             className="flex items-center justify-center gap-2 rounded-[20px] border border-cyan-400/20 bg-cyan-400/10 px-3 py-3 text-sm font-medium text-cyan-100 transition hover:bg-cyan-400/15"
           >
             <UsersIcon />
-            <span className="hidden lg:inline">New group</span>
+            <span className="sm:hidden lg:inline">New group</span>
           </button>
         </div>
 
-        <div className="mt-6 hidden items-center justify-between px-2 lg:flex">
+        <div className="mt-6 flex items-center justify-between px-2 sm:hidden lg:flex">
           <p className="text-xs uppercase tracking-[0.28em] text-slate-400">
             Chats
           </p>
@@ -167,7 +161,7 @@ export default function Sidebar({
 
         <div className="scrollbar-thin mt-4 flex-1 overflow-y-auto pr-1 sm:pr-0 lg:pr-1">
           {chats.length === 0 ? (
-            <div className="hidden rounded-[24px] border border-white/10 bg-white/5 px-5 py-8 text-center text-sm leading-6 text-slate-300 lg:block">
+            <div className="rounded-[24px] border border-white/10 bg-white/5 px-5 py-8 text-center text-sm leading-6 text-slate-300 sm:hidden lg:block">
               Add a friend or create a group to start chatting.
             </div>
           ) : null}
@@ -188,7 +182,7 @@ export default function Sidebar({
                     onClose();
                   }}
                   className={[
-                    "group flex w-full items-center gap-3 rounded-[24px] border text-left transition-all duration-200 sm:justify-center sm:px-0 sm:py-3 lg:justify-start lg:px-3",
+                    "group flex w-full items-center gap-3 rounded-[24px] border px-3 py-3 text-left transition-all duration-200 sm:justify-center sm:px-0 lg:justify-start lg:px-3",
                     isActive
                       ? "border-cyan-400/30 bg-gradient-to-r from-cyan-400/20 via-sky-500/10 to-transparent shadow-[0_18px_60px_-28px_rgba(6,182,212,0.85)]"
                       : "border-transparent bg-white/5 hover:border-white/10 hover:bg-white/10",
@@ -244,7 +238,7 @@ export default function Sidebar({
           className="mt-4 flex items-center justify-center gap-2 rounded-[22px] border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-slate-100 transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-70"
         >
           <LogoutIcon />
-          <span className="hidden lg:inline">
+          <span className="sm:hidden lg:inline">
             {isLoggingOut ? "Signing out..." : "Logout"}
           </span>
         </button>

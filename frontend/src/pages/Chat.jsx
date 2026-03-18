@@ -576,16 +576,7 @@ export default function Chat() {
   return (
     <>
       <div className="relative min-h-screen overflow-hidden p-3 sm:p-5">
-        {isSidebarOpen ? (
-          <button
-            type="button"
-            onClick={() => setIsSidebarOpen(false)}
-            className="fixed inset-0 z-20 bg-slate-950/60 backdrop-blur-sm md:hidden"
-            aria-label="Close sidebar overlay"
-          />
-        ) : null}
-
-        <div className="relative mx-auto flex min-h-[calc(100vh-1.5rem)] max-w-[1800px] gap-4 sm:min-h-[calc(100vh-2.5rem)]">
+        <div className="relative mx-auto flex min-h-[calc(100vh-1.5rem)] max-w-[1800px] flex-col gap-4 sm:min-h-[calc(100vh-2.5rem)] sm:flex-row">
           <Sidebar
             user={user}
             chats={chats}
@@ -594,7 +585,6 @@ export default function Chat() {
             onLogout={handleLogout}
             isLoggingOut={isLoggingOut}
             connectionState={connectionState}
-            isMobileOpen={isSidebarOpen}
             onClose={() => setIsSidebarOpen(false)}
             onOpenAddFriend={() => {
               setAddFriendError("");
@@ -610,7 +600,7 @@ export default function Chat() {
           />
 
           {isBootstrapping ? (
-            <div className="panel-surface flex min-h-[calc(100vh-1.5rem)] flex-1 items-center justify-center rounded-[30px] md:min-h-[calc(100vh-2.5rem)]">
+            <div className="panel-surface flex min-h-[56vh] flex-1 items-center justify-center rounded-[30px] md:min-h-[calc(100vh-2.5rem)]">
               <div className="text-center">
                 <div className="mx-auto mb-4 h-14 w-14 animate-pulse rounded-2xl bg-gradient-to-br from-cyan-400 to-sky-600" />
                 <p className="font-display text-xl font-semibold text-white">
