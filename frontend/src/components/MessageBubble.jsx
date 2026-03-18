@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const timeFormatter = new Intl.DateTimeFormat("en", {
   hour: "numeric",
@@ -37,11 +37,27 @@ async function downloadImage(url, filename) {
 
 export default function MessageBubble({ message, currentUser }) {
   const [isDownloading, setIsDownloading] = useState(false);
+  const [shareFeedback, setShareFeedback] = useState("");
+  const shareTimerRef = useRef(null);
   const isOwnMessage = message.sender === currentUser?.username;
   const sentAt = message?.createdAt
     ? timeFormatter.format(new Date(message.createdAt))
     : "Now";
   const hasImage = Boolean(message.imageUrl);
+
+  useEffect(() => {
+    return () => {
+      window.clearTimeout(shareTimerRef.current);
+    };
+  }, []);
+
+  const setTemporaryShareFeedback = (value) => {
+    setShareFeedback(value);
+    window.clearTimeout(shareTimerRef.current);
+    shareTimerRef.current = window.setTimeout(() => {
+      setShareFeedback("");
+    }, 1600);
+  };
 
   const handleDownload = async () => {
     if (!message.imageUrl || isDownloading) {
@@ -55,6 +71,29 @@ export default function MessageBubble({ message, currentUser }) {
       window.open(message.imageUrl, "_blank", "noopener,noreferrer");
     } finally {
       setIsDownloading(false);
+    }
+  };
+
+  const handleShare = async () => {
+    if (!message.imageUrl) {
+      return;
+    }
+
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: message.imageName || "Chatify photo",
+          text: message.text || "Shared from Chatify",
+          url: message.imageUrl,
+        });
+        setTemporaryShareFeedback("Shared");
+        return;
+      }
+
+      await navigator.clipboard.writeText(message.imageUrl);
+      setTemporaryShareFeedback("Copied");
+    } catch (_error) {
+      setTemporaryShareFeedback("Ready");
     }
   };
 
@@ -90,17 +129,26 @@ export default function MessageBubble({ message, currentUser }) {
               />
             </a>
 
-            <div className="flex items-center justify-between gap-3 px-3 py-2">
-              <p className="truncate text-xs text-slate-200/80">
+            <div className="flex flex-wrap items-center justify-between gap-3 px-3 py-2">
+              <p className="min-w-0 flex-1 truncate text-xs text-slate-200/80">
                 {message.imageName || "Shared photo"}
               </p>
-              <button
-                type="button"
-                onClick={handleDownload}
-                className="rounded-full border border-white/10 bg-white/10 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-white transition hover:bg-white/15"
-              >
-                {isDownloading ? "Saving" : "Download"}
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleShare}
+                  className="rounded-full border border-white/10 bg-white/10 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-white transition hover:bg-white/15"
+                >
+                  {shareFeedback || "Share"}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDownload}
+                  className="rounded-full border border-white/10 bg-white/10 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-white transition hover:bg-white/15"
+                >
+                  {isDownloading ? "Saving" : "Download"}
+                </button>
+              </div>
             </div>
           </div>
         ) : null}

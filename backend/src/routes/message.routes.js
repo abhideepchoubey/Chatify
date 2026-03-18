@@ -1,8 +1,5 @@
 import express from "express";
-import {
-  getMessages,
-  uploadPhoto,
-} from "../controllers/message.controller.js";
+import { getMessages, uploadPhoto } from "../controllers/message.controller.js";
 import { auth } from "../middlewares/auth.middleware.js";
 import { imageUpload } from "../middlewares/upload.middleware.js";
 

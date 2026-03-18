@@ -16,7 +16,11 @@ function UserPlusIcon() {
       stroke="currentColor"
       className="h-5 w-5"
     >
-      <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 0 0-3-.479c-1.62 0-3.145.402-4.5 1.114M16.5 7.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0ZM19.5 8.25v6m3-3h-6" />
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M15 19.128a9.38 9.38 0 0 0-3-.479c-1.62 0-3.145.402-4.5 1.114M16.5 7.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0ZM19.5 8.25v6m3-3h-6"
+      />
     </svg>
   );
 }
@@ -31,7 +35,11 @@ function UsersIcon() {
       stroke="currentColor"
       className="h-5 w-5"
     >
-      <path strokeLinecap="round" strokeLinejoin="round" d="M18 18.72a9.094 9.094 0 0 0 3.742.78c.973 0 1.914-.151 2.798-.43M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm6 3a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Zm-13.5 0a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0ZM3 19.5a9 9 0 0 1 18 0" />
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M18 18.72a9.094 9.094 0 0 0 3.742.78c.973 0 1.914-.151 2.798-.43M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm6 3a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Zm-13.5 0a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0ZM3 19.5a9 9 0 0 1 18 0"
+      />
     </svg>
   );
 }
@@ -46,7 +54,11 @@ function LogoutIcon() {
       stroke="currentColor"
       className="h-5 w-5"
     >
-      <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-7.5a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 6 21h7.5a2.25 2.25 0 0 0 2.25-2.25V15m-3 0 3 3m0 0 3-3m-3 3V9" />
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-7.5a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 6 21h7.5a2.25 2.25 0 0 0 2.25-2.25V15m-3 0 3 3m0 0 3-3m-3 3V9"
+      />
     </svg>
   );
 }

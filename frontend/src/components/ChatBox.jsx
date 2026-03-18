@@ -82,7 +82,11 @@ export default function ChatBox({
                 stroke="currentColor"
                 className="h-5 w-5"
               >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 5.25h16.5m-16.5 6h16.5m-16.5 6h16.5" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M3.75 5.25h16.5m-16.5 6h16.5m-16.5 6h16.5"
+                />
               </svg>
             </button>
 
@@ -169,7 +173,10 @@ export default function ChatBox({
             <div className="space-y-3">
               {messages.map((message) => (
                 <MessageBubble
-                  key={message._id || `${message.sender}-${message.text}-${message.createdAt || ""}`}
+                  key={
+                    message._id ||
+                    `${message.sender}-${message.text}-${message.createdAt || ""}`
+                  }
                   message={message}
                   currentUser={currentUser}
                 />
@@ -201,4 +208,3 @@ export default function ChatBox({
     </div>
   );
 }
-

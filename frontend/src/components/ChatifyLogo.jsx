@@ -39,10 +39,18 @@ export default function ChatifyLogo({
 
       {!compact ? (
         <div>
-          <p className={["font-display text-xl font-semibold", textTone].join(" ")}>
+          <p
+            className={["font-display text-xl font-semibold", textTone].join(
+              " "
+            )}
+          >
             Chatify
           </p>
-          <p className={["text-xs uppercase tracking-[0.3em]", subTone].join(" ")}>
+          <p
+            className={["text-xs uppercase tracking-[0.3em]", subTone].join(
+              " "
+            )}
+          >
             Private Realtime Chat
           </p>
         </div>

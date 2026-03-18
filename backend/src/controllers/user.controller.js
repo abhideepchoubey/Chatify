@@ -43,8 +43,10 @@ export const searchUsers = asyncHandler(async (req, res) => {
 });
 
 export const getFriends = asyncHandler(async (req, res) => {
-  const currentUser = await User.findById(req.user.id)
-    .populate("friends", "_id username online lastSeen avatar");
+  const currentUser = await User.findById(req.user.id).populate(
+    "friends",
+    "_id username online lastSeen avatar"
+  );
 
   const friends = (currentUser?.friends || []).map((friend) => ({
     _id: String(friend._id),
@@ -59,7 +61,9 @@ export const getFriends = asyncHandler(async (req, res) => {
 
 export const addFriend = asyncHandler(async (req, res) => {
   const { userId, username } = req.body;
-  const currentUser = await User.findById(req.user.id).select("_id friends username");
+  const currentUser = await User.findById(req.user.id).select(
+    "_id friends username"
+  );
   const friend = await User.findOne(
     userId ? { _id: userId } : { username: username?.trim() }
   ).select("_id username online lastSeen avatar");

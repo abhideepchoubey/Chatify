@@ -14,9 +14,7 @@ const getLastMessagePreview = (chat) => {
   }
 
   if (lastMessage.messageType === "image") {
-    return lastMessage.text
-      ? `Photo: ${lastMessage.text}`
-      : "Photo";
+    return lastMessage.text ? `Photo: ${lastMessage.text}` : "Photo";
   }
 
   return lastMessage.text;
@@ -39,10 +37,18 @@ export const serializeChat = (chat, currentUserId) => {
   return {
     id: String(chat._id),
     room: String(chat._id),
-    name: isGroup ? chat.name : otherMember?.username || chat.name || "Direct chat",
+    name: isGroup
+      ? chat.name
+      : otherMember?.username || chat.name || "Direct chat",
     type: isGroup ? "Group" : "Direct",
     chatType: chat.type,
-    subtitle: preview || (isGroup ? `${members.length} members` : otherMember?.online ? "Online now" : "Start chatting"),
+    subtitle:
+      preview ||
+      (isGroup
+        ? `${members.length} members`
+        : otherMember?.online
+          ? "Online now"
+          : "Start chatting"),
     description: isGroup
       ? `${members.length} members`
       : otherMember?.online

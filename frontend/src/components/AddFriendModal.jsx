@@ -15,7 +15,8 @@ export default function AddFriendModal({
 }) {
   const trimmedQuery = query.trim();
   const showInstruction = !trimmedQuery;
-  const showNotFound = trimmedQuery && hasSearched && !loading && results.length === 0 && !error;
+  const showNotFound =
+    trimmedQuery && hasSearched && !loading && results.length === 0 && !error;
 
   return (
     <ModalShell
@@ -102,7 +103,9 @@ export default function AddFriendModal({
                   <button
                     type="button"
                     onClick={() => onAddFriend(result)}
-                    disabled={result.isFriend || submittingUserId === result._id}
+                    disabled={
+                      result.isFriend || submittingUserId === result._id
+                    }
                     className="rounded-[18px] border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {result.isFriend

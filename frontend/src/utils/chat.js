@@ -41,7 +41,5 @@ export const sortChats = (items = []) =>
       new Date(
         second.lastMessage?.createdAt || second.updatedAt || 0
       ).getTime() -
-      new Date(
-        first.lastMessage?.createdAt || first.updatedAt || 0
-      ).getTime()
+      new Date(first.lastMessage?.createdAt || first.updatedAt || 0).getTime()
   );

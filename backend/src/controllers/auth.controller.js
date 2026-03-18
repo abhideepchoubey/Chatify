@@ -86,10 +86,7 @@ export const refreshAccessToken = asyncHandler(async (req, res) => {
     throw new ApiError(401, "Refresh token missing");
   }
 
-  const decoded = jwt.verify(
-    refreshToken,
-    process.env.REFRESH_TOKEN_SECRET
-  );
+  const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
 
   const user = await User.findById(decoded.id);
 
@@ -101,13 +98,7 @@ export const refreshAccessToken = asyncHandler(async (req, res) => {
 
   res
     .cookie("accessToken", accessToken, cookieOptions)
-    .json(
-      new ApiResponse(
-        200,
-        { accessToken },
-        "Access token refreshed"
-      )
-    );
+    .json(new ApiResponse(200, { accessToken }, "Access token refreshed"));
 });
 
 export const getCurrentUser = asyncHandler(async (req, res) => {
@@ -119,13 +110,7 @@ export const getCurrentUser = asyncHandler(async (req, res) => {
     throw new ApiError(404, "User doesn't exist");
   }
 
-  res.json(
-    new ApiResponse(
-      200,
-      user,
-      "Current user fetched successfully"
-    )
-  );
+  res.json(new ApiResponse(200, user, "Current user fetched successfully"));
 });
 
 export const logout = asyncHandler(async (req, res) => {

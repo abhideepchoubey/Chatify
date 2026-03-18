@@ -15,7 +15,8 @@ const normalizeUser = (payload) => {
 };
 
 const getApiMessage = (error) => {
-  const apiMessage = error?.response?.data?.message || error?.response?.data?.error;
+  const apiMessage =
+    error?.response?.data?.message || error?.response?.data?.error;
 
   if (apiMessage === "User exists") {
     return "User already exists";

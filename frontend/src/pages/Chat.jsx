@@ -58,7 +58,8 @@ const applyMessageToChats = (currentChats, message) =>
               text: message.text,
               imageUrl: message.imageUrl || "",
               imageName: message.imageName || "",
-              messageType: message.messageType || (message.imageUrl ? "image" : "text"),
+              messageType:
+                message.messageType || (message.imageUrl ? "image" : "text"),
               createdAt: message.createdAt,
             },
             updatedAt: message.createdAt,
@@ -104,7 +105,8 @@ export default function Chat() {
   const messages = activeChat ? messagesByRoom[activeChat.room] || [] : [];
   const draft = activeChat ? drafts[activeChat.room] || "" : "";
   const typingUser = activeChat ? typingUsers[activeChat.room] : "";
-  const isLoading = activeChat && loadingRoom === activeChat.room && messages.length === 0;
+  const isLoading =
+    activeChat && loadingRoom === activeChat.room && messages.length === 0;
   const loadingError = activeChat ? roomErrors[activeChat.room] : "";
   const isSendingDisabled =
     !activeChat ||
@@ -149,7 +151,9 @@ export default function Chat() {
 
   const refreshChats = async (nextActiveId = "") => {
     const response = await api.get("/chats");
-    const nextChats = sortChats(Array.isArray(response.data?.data) ? response.data.data : []);
+    const nextChats = sortChats(
+      Array.isArray(response.data?.data) ? response.data.data : []
+    );
 
     setChats(nextChats);
     setActiveChatId((current) => {
@@ -169,7 +173,9 @@ export default function Chat() {
 
   const refreshFriends = async () => {
     const response = await api.get("/users/friends");
-    const nextFriends = Array.isArray(response.data?.data) ? response.data.data : [];
+    const nextFriends = Array.isArray(response.data?.data)
+      ? response.data.data
+      : [];
 
     setFriends(nextFriends);
     return nextFriends;
@@ -400,7 +406,9 @@ export default function Chat() {
             query: trimmedQuery,
           },
         });
-        const results = Array.isArray(response.data?.data) ? response.data.data : [];
+        const results = Array.isArray(response.data?.data)
+          ? response.data.data
+          : [];
 
         if (!isCancelled) {
           setUserSearchResults(results);

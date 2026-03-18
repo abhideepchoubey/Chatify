@@ -60,7 +60,11 @@ export default function InputBar({
             stroke="currentColor"
             className="h-5 w-5"
           >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 7.5h10.5m-10.5 4.5h10.5m-10.5 4.5h6.75M3.75 5.25A2.25 2.25 0 0 1 6 3h12a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 18 21H6a2.25 2.25 0 0 1-2.25-2.25V5.25Z" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M6.75 7.5h10.5m-10.5 4.5h10.5m-10.5 4.5h6.75M3.75 5.25A2.25 2.25 0 0 1 6 3h12a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 18 21H6a2.25 2.25 0 0 1-2.25-2.25V5.25Z"
+            />
           </svg>
         </button>
 
@@ -104,7 +108,9 @@ export default function InputBar({
                 {selectedImage.file.name}
               </p>
               <p className="text-xs text-slate-400">
-                {isUploadingImage ? "Uploading photo..." : "Photo ready to send"}
+                {isUploadingImage
+                  ? "Uploading photo..."
+                  : "Photo ready to send"}
               </p>
             </div>
           </div>
