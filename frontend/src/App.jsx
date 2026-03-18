@@ -26,7 +26,7 @@ function ProtectedRoute({ children }) {
     return <SplashScreen />;
   }
 
-  return user ? children : <Navigate replace to="/login" />;
+  return user ? children : <Navigate replace to="/" />;
 }
 
 function PublicRoute({ children }) {
@@ -46,16 +46,13 @@ export default function App() {
     <Routes>
       <Route
         path="/"
-        element={<Navigate replace to={user ? "/chat" : "/login"} />}
-      />
-      <Route
-        path="/login"
         element={
           <PublicRoute>
             <Login />
           </PublicRoute>
         }
       />
+      <Route path="/login" element={<Navigate replace to="/" />} />
       <Route
         path="/chat"
         element={
@@ -66,7 +63,7 @@ export default function App() {
       />
       <Route
         path="*"
-        element={<Navigate replace to={user ? "/chat" : "/login"} />}
+        element={<Navigate replace to={user ? "/chat" : "/"} />}
       />
     </Routes>
   );

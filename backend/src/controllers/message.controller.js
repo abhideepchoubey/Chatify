@@ -3,6 +3,10 @@ import { Chat } from "../models/chat.models.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { ApiError } from "../utils/ApiError.js";
+import {
+  cloudinaryConfigured,
+  uploadBufferToCloudinary,
+} from "../utils/cloudinary.js";
 
 const ensureChatAccess = async (chatId, userId) => {
   const chat = await Chat.findOne({
@@ -36,17 +40,23 @@ export const uploadPhoto = asyncHandler(async (req, res) => {
 
   await ensureChatAccess(room, req.user.id);
 
-  if (!req.file) {
+  if (!req.file?.buffer) {
     throw new ApiError(400, "Photo is required");
   }
 
-  const imageUrl = `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`;
+  if (!cloudinaryConfigured) {
+    throw new ApiError(500, "Cloudinary is not configured");
+  }
+
+  const uploadResult = await uploadBufferToCloudinary(req.file.buffer, {
+    resourceType: "image",
+  });
 
   res.json(
     new ApiResponse(
       200,
       {
-        imageUrl,
+        imageUrl: uploadResult.secure_url || uploadResult.url,
         imageName: req.file.originalname,
       },
       "Photo uploaded successfully"
