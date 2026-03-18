@@ -14,16 +14,19 @@ const app = express();
 const currentFilePath = fileURLToPath(import.meta.url);
 const currentDirectory = path.dirname(currentFilePath);
 const fallbackOrigins = ["http://localhost:5173", "http://127.0.0.1:5173"];
+const configuredOriginValue = process.env.CORS_ORIGIN;
+const allowAllOrigins = configuredOriginValue === "*";
 const configuredOrigins =
-  process.env.CORS_ORIGIN && process.env.CORS_ORIGIN !== "*"
-    ? process.env.CORS_ORIGIN.split(",")
+  configuredOriginValue && configuredOriginValue !== "*"
+    ? configuredOriginValue
+        .split(",")
         .map((origin) => origin.trim())
         .filter(Boolean)
     : fallbackOrigins;
 
 export const corsOptions = {
   origin(origin, callback) {
-    if (!origin || configuredOrigins.includes(origin)) {
+    if (!origin || allowAllOrigins || configuredOrigins.includes(origin)) {
       callback(null, true);
       return;
     }
