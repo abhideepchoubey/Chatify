@@ -24,9 +24,52 @@ const configuredOrigins =
         .filter(Boolean)
     : fallbackOrigins;
 
+const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+const configuredVercelProjects = configuredOrigins
+  .map((origin) => {
+    try {
+      const { hostname } = new URL(origin);
+
+      return hostname.endsWith(".vercel.app")
+        ? hostname.replace(/\.vercel\.app$/i, "")
+        : null;
+    } catch {
+      return null;
+    }
+  })
+  .filter(Boolean);
+
+const isAllowedVercelPreviewOrigin = (origin) => {
+  try {
+    const { protocol, hostname } = new URL(origin);
+
+    if (protocol !== "https:") {
+      return false;
+    }
+
+    return configuredVercelProjects.some((projectName) => {
+      const projectPattern = new RegExp(
+        `^${escapeRegex(projectName)}(?:-[a-z0-9-]+)?\\.vercel\\.app$`,
+        "i"
+      );
+
+      return projectPattern.test(hostname);
+    });
+  } catch {
+    return false;
+  }
+};
+
+const isAllowedOrigin = (origin) =>
+  !origin ||
+  allowAllOrigins ||
+  configuredOrigins.includes(origin) ||
+  isAllowedVercelPreviewOrigin(origin);
+
 export const corsOptions = {
   origin(origin, callback) {
-    if (!origin || allowAllOrigins || configuredOrigins.includes(origin)) {
+    if (isAllowedOrigin(origin)) {
       callback(null, true);
       return;
     }

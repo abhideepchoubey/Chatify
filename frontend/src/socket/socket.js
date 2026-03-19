@@ -5,8 +5,8 @@ const resolveSocketUrl = () => {
     return import.meta.env.VITE_SOCKET_URL;
   }
 
-  if (import.meta.env.PROD && typeof window !== "undefined") {
-    return window.location.origin;
+  if (import.meta.env.PROD) {
+    return "https://chatify-backend-8gna.onrender.com";
   }
 
   return "http://localhost:5000";
