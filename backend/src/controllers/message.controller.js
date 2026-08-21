@@ -1,5 +1,6 @@
 import { Message } from "../models/message.models.js";
 import { Chat } from "../models/chat.models.js";
+import { unlink } from "fs/promises";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { ApiError } from "../utils/ApiError.js";
@@ -19,6 +20,20 @@ const ensureChatAccess = async (chatId, userId) => {
   }
 
   return chat;
+};
+
+const cleanupUploadedFile = async (file) => {
+  if (!file?.path) {
+    return;
+  }
+
+  try {
+    await unlink(file.path);
+  } catch (error) {
+    if (error?.code !== "ENOENT") {
+      console.error("Upload cleanup error:", error.message);
+    }
+  }
 };
 
 export const getMessages = asyncHandler(async (req, res) => {
@@ -48,18 +63,22 @@ export const uploadPhoto = asyncHandler(async (req, res) => {
     throw new ApiError(500, "Cloudinary is not configured");
   }
 
-  const uploadResult = await uploadBufferToCloudinary(req.file.buffer, {
-    resourceType: "image",
-  });
+  try {
+    const uploadResult = await uploadBufferToCloudinary(req.file.buffer, {
+      resourceType: "image",
+    });
 
-  res.json(
-    new ApiResponse(
-      200,
-      {
-        imageUrl: uploadResult.secure_url || uploadResult.url,
-        imageName: req.file.originalname,
-      },
-      "Photo uploaded successfully"
-    )
-  );
+    res.json(
+      new ApiResponse(
+        200,
+        {
+          imageUrl: uploadResult.secure_url || uploadResult.url,
+          imageName: req.file.originalname,
+        },
+        "Photo uploaded successfully"
+      )
+    );
+  } finally {
+    await cleanupUploadedFile(req.file);
+  }
 });

@@ -1,8 +1,6 @@
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-import path from "path";
-import { fileURLToPath } from "url";
 
 import authRoutes from "./routes/auth.routes.js";
 import chatRoutes from "./routes/chat.routes.js";
@@ -11,8 +9,6 @@ import userRoutes from "./routes/user.routes.js";
 import { ApiError } from "./utils/ApiError.js";
 
 const app = express();
-const currentFilePath = fileURLToPath(import.meta.url);
-const currentDirectory = path.dirname(currentFilePath);
 const fallbackOrigins = ["http://localhost:5173", "http://127.0.0.1:5173"];
 const configuredOriginValue = process.env.CORS_ORIGIN;
 const allowAllOrigins = configuredOriginValue === "*";
@@ -83,10 +79,6 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-app.use(
-  "/uploads",
-  express.static(path.resolve(currentDirectory, "../public/uploads"))
-);
 
 app.use("/api/auth", authRoutes);
 app.use("/api/chats", chatRoutes);
