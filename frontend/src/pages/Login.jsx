@@ -87,6 +87,7 @@ function AuthForm({
   form,
   error,
   isSubmitting,
+  backendStatus,
   onChange,
   onSubmit,
   isLight,
@@ -168,9 +169,11 @@ function AuthForm({
         className="inline-flex w-full items-center justify-center rounded-[22px] bg-gradient-to-r from-cyan-400 via-sky-500 to-blue-600 px-4 py-4 text-sm font-semibold text-white shadow-lg shadow-cyan-950/40 transition hover:translate-y-[-1px] disabled:cursor-not-allowed disabled:opacity-70"
       >
         {isSubmitting
-          ? mode === "login"
-            ? "Signing in..."
-            : "Creating account..."
+          ? backendStatus === "waking" || backendStatus === "connecting"
+            ? "Waiting for server..."
+            : mode === "login"
+              ? "Signing in..."
+              : "Creating account..."
           : mode === "login"
             ? "Login"
             : "Register"}
@@ -181,7 +184,7 @@ function AuthForm({
 
 export default function Login() {
   const navigate = useNavigate();
-  const { login, register, getApiMessage } = useAuth();
+  const { user, login, register, getApiMessage, backendStatus } = useAuth();
   const [theme, setTheme] = useState("dark");
   const [authModalMode, setAuthModalMode] = useState(null);
   const [form, setForm] = useState(initialForm);
@@ -296,13 +299,13 @@ export default function Login() {
         <div className="absolute right-4 top-4 z-20 flex items-center gap-2 sm:right-6 sm:top-6">
           <button
             type="button"
-            onClick={() => openModal("login")}
+            onClick={() => (user ? navigate("/chat") : openModal("login"))}
             className={[
               "rounded-full px-5 py-3 text-sm font-semibold transition",
               tones.button,
             ].join(" ")}
           >
-            Login
+            {user ? "Open chat" : "Login"}
           </button>
           <button
             type="button"
@@ -567,6 +570,7 @@ export default function Login() {
             form={form}
             error={error}
             isSubmitting={isSubmitting}
+            backendStatus={backendStatus}
             onChange={handleChange}
             onSubmit={handleSubmit}
             isLight={isLight}

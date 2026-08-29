@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import api from "../api/axios";
 
 const AuthContext = createContext(null);
+const WAKE_RETRY_DELAYS = [1200, 2200, 4000, 7000];
 
 const normalizeUser = (payload) => {
   if (!payload) {
@@ -13,6 +14,27 @@ const normalizeUser = (payload) => {
     username: payload.username,
   };
 };
+
+const isAuthFailure = (error) =>
+  error?.response?.status === 401 || error?.response?.status === 403;
+
+const isBackendUnavailable = (error) => {
+  const status = error?.response?.status;
+
+  return (
+    !error?.response ||
+    status === 408 ||
+    status === 425 ||
+    status === 429 ||
+    status === 500 ||
+    status === 502 ||
+    status === 503 ||
+    status === 504
+  );
+};
+
+const delay = (milliseconds) =>
+  new Promise((resolve) => window.setTimeout(resolve, milliseconds));
 
 const getApiMessage = (error) => {
   const apiMessage =
@@ -34,46 +56,68 @@ const getApiMessage = (error) => {
     return "User already exists";
   }
 
+  if (isBackendUnavailable(error)) {
+    return "The server is still waking up. Please try again.";
+  }
+
   return error?.message || "Something went wrong";
 };
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [backendStatus, setBackendStatus] = useState("connecting");
+
+  const waitForBackend = async () => {
+    setBackendStatus("connecting");
+
+    for (let attempt = 0; attempt <= WAKE_RETRY_DELAYS.length; attempt += 1) {
+      try {
+        await api.get("/health", { skipAuthRefresh: true });
+        setBackendStatus("ready");
+        return;
+      } catch (error) {
+        // A non-server response (including an older deployment's 404) means
+        // Render is awake and ready to handle the real authentication request.
+        if (error?.response && !isBackendUnavailable(error)) {
+          setBackendStatus("ready");
+          return;
+        }
+
+        if (attempt === WAKE_RETRY_DELAYS.length) {
+          setBackendStatus("unavailable");
+          throw error;
+        }
+
+        setBackendStatus("waking");
+        await delay(WAKE_RETRY_DELAYS[attempt]);
+      }
+    }
+  };
+
+  const restoreSession = async () => {
+    setLoading(true);
+
+    try {
+      await waitForBackend();
+      const response = await api.get("/auth/me");
+      setUser(normalizeUser(response.data?.data));
+    } catch (error) {
+      if (isAuthFailure(error)) {
+        setUser(null);
+      } else {
+        console.error(getApiMessage(error));
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    let isMounted = true;
-
-    const restoreSession = async () => {
-      try {
-        const response = await api.get("/auth/me");
-
-        if (isMounted) {
-          setUser(normalizeUser(response.data?.data));
-        }
-      } catch (error) {
-        if (
-          isMounted &&
-          error?.response?.status !== 401 &&
-          error?.response?.status !== 403
-        ) {
-          console.error(getApiMessage(error));
-        }
-      } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
-      }
-    };
-
     restoreSession();
-
-    return () => {
-      isMounted = false;
-    };
   }, []);
 
-  const login = async (credentials) => {
+  const authenticate = async (credentials) => {
     const response = await api.post("/auth/login", credentials);
     const nextUser = normalizeUser(response.data?.data);
 
@@ -81,16 +125,22 @@ export function AuthProvider({ children }) {
     return nextUser;
   };
 
+  const login = async (credentials) => {
+    await waitForBackend();
+    return authenticate(credentials);
+  };
+
   const register = async (credentials) => {
+    await waitForBackend();
     await api.post("/auth/register", credentials);
-    return login(credentials);
+    return authenticate(credentials);
   };
 
   const logout = async () => {
     try {
       await api.post("/auth/logout");
     } catch (error) {
-      if (error?.response?.status !== 401 && error?.response?.status !== 403) {
+      if (!isAuthFailure(error)) {
         throw new Error(getApiMessage(error));
       }
     } finally {
@@ -101,10 +151,12 @@ export function AuthProvider({ children }) {
   const value = {
     user,
     loading,
+    backendStatus,
     isAuthenticated: Boolean(user),
     login,
     register,
     logout,
+    restoreSession,
     getApiMessage,
   };
 
