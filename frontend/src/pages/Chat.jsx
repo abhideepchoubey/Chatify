@@ -575,8 +575,8 @@ export default function Chat() {
 
   return (
     <>
-      <div className="relative min-h-screen overflow-hidden p-3 sm:p-5">
-        <div className="relative mx-auto flex min-h-[calc(100vh-1.5rem)] max-w-[1800px] flex-col gap-4 sm:min-h-[calc(100vh-2.5rem)] sm:flex-row">
+      <div className="relative h-dvh overflow-hidden p-3 sm:p-5">
+        <div className="relative mx-auto flex h-full min-h-0 max-w-[1800px] flex-col gap-3 sm:flex-row sm:gap-4">
           <Sidebar
             user={user}
             chats={chats}
@@ -600,7 +600,7 @@ export default function Chat() {
           />
 
           {isBootstrapping ? (
-            <div className="panel-surface flex min-h-[56vh] flex-1 items-center justify-center rounded-[30px] md:min-h-[calc(100vh-2.5rem)]">
+            <div className="panel-surface flex min-h-0 flex-1 items-center justify-center rounded-[30px]">
               <div className="text-center">
                 <div className="mx-auto mb-4 h-14 w-14 animate-pulse rounded-2xl bg-gradient-to-br from-cyan-400 to-sky-600" />
                 <p className="font-display text-xl font-semibold text-white">

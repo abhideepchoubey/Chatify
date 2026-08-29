@@ -33,7 +33,7 @@ export default function InputBar({
   };
 
   return (
-    <div className="border-t border-white/10 bg-slate-950/65 p-4 sm:p-5">
+    <div className="shrink-0 border-t border-white/10 bg-slate-950/65 p-4 sm:p-5">
       <div className="panel-surface flex items-end gap-3 rounded-[28px] border border-white/10 bg-white/5 px-4 py-3">
         <input
           ref={fileInputRef}

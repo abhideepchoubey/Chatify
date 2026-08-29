@@ -31,7 +31,7 @@ export default function ChatBox({
 
   if (!chat) {
     return (
-      <div className="panel-surface flex min-h-[56vh] min-w-0 flex-1 flex-col items-center justify-center rounded-[30px] px-6 text-center md:min-h-[calc(100vh-2.5rem)]">
+      <div className="panel-surface flex min-h-0 min-w-0 flex-1 flex-col items-center justify-center rounded-[30px] px-6 text-center">
         <div className="mx-auto flex h-20 w-20 animate-float-slow items-center justify-center rounded-[28px] bg-gradient-to-br from-cyan-400/20 to-blue-600/20 text-3xl text-cyan-100">
           +
         </div>
@@ -65,8 +65,8 @@ export default function ChatBox({
   const gradient = getChatGradient(chat.id);
 
   return (
-    <div className="panel-surface flex min-h-[56vh] min-w-0 flex-1 flex-col overflow-hidden rounded-[30px] md:min-h-[calc(100vh-2.5rem)]">
-      <header className="border-b border-white/10 bg-slate-950/80 px-4 py-4 sm:px-6">
+    <div className="panel-surface flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-[30px]">
+      <header className="shrink-0 border-b border-white/10 bg-slate-950/80 px-4 py-4 sm:px-6">
         <div className="flex items-center justify-between gap-4">
           <div className="flex min-w-0 items-center gap-3">
             <button type="button" onClick={onOpenSidebar} className="hidden">

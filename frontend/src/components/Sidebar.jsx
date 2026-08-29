@@ -180,7 +180,7 @@ export default function Sidebar({
 }) {
   return (
     <>
-      <aside className="sticky top-3 z-20 w-full sm:hidden">
+      <aside className="scrollbar-thin z-20 max-h-[42dvh] w-full shrink-0 overflow-y-auto sm:hidden">
         <div className="panel-surface rounded-[28px] px-3 py-3 shadow-glow">
           <div className="flex items-center justify-between gap-3 border-b border-white/10 pb-3">
             <div className="min-w-0">
@@ -279,8 +279,8 @@ export default function Sidebar({
         </div>
       </aside>
 
-      <aside className="hidden shrink-0 sm:block sm:w-[6.2rem] lg:w-80">
-        <div className="panel-surface flex h-full flex-col rounded-[30px] px-2 py-4 shadow-glow lg:px-4">
+      <aside className="hidden h-full min-h-0 shrink-0 sm:block sm:w-[6.2rem] lg:w-80">
+        <div className="panel-surface flex h-full min-h-0 flex-col rounded-[30px] px-2 py-4 shadow-glow lg:px-4">
           <div className="flex items-center justify-between border-b border-white/10 px-1 pb-4 sm:flex-col sm:gap-3 lg:flex-row lg:gap-0 lg:px-2">
             <div className="sm:flex sm:flex-col sm:items-center lg:block">
               <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-400 via-sky-500 to-indigo-600 text-base font-semibold text-white lg:hidden">
@@ -354,7 +354,7 @@ export default function Sidebar({
             </span>
           </div>
 
-          <div className="scrollbar-thin mt-4 flex-1 overflow-y-auto pr-1 lg:pr-1">
+          <div className="scrollbar-thin mt-4 min-h-0 flex-1 overflow-y-auto pr-1 lg:pr-1">
             {chats.length === 0 ? (
               <div className="hidden rounded-[24px] border border-white/10 bg-white/5 px-5 py-8 text-center text-sm leading-6 text-slate-300 lg:block">
                 Add a friend or create a group to start chatting.
