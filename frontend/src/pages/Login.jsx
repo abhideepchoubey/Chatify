@@ -82,16 +82,75 @@ function ThemeIcon({ isLight }) {
   );
 }
 
-function AuthForm({
-  mode,
-  form,
-  error,
-  isSubmitting,
-  backendStatus,
-  onChange,
-  onSubmit,
-  isLight,
-}) {
+function PreparingWorkspace({ isLight, backendStatus }) {
+  const isWaking = backendStatus === "waking" || backendStatus === "connecting";
+
+  return (
+    <div
+      className={[
+        "flex min-h-screen items-center justify-center px-4 py-10",
+        isLight
+          ? "bg-[radial-gradient(circle_at_top_left,_rgba(14,165,233,0.2),_transparent_30%),linear-gradient(145deg,#f8fafc,#dbeafe)]"
+          : "bg-[radial-gradient(circle_at_top_left,_rgba(34,211,238,0.16),_transparent_28%),linear-gradient(145deg,#020617,#0f172a)]",
+      ].join(" ")}
+    >
+      <div
+        className={[
+          "w-full max-w-md animate-message-in rounded-[32px] border px-6 py-10 text-center shadow-2xl backdrop-blur-xl sm:px-10",
+          isLight
+            ? "border-slate-200 bg-white/85 text-slate-950 shadow-sky-200/50"
+            : "border-white/10 bg-slate-950/80 text-white shadow-cyan-950/50",
+        ].join(" ")}
+      >
+        <div className="relative mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-[26px] bg-gradient-to-br from-cyan-400 via-sky-500 to-blue-600 shadow-lg shadow-cyan-500/20">
+          <div className="absolute inset-[-8px] animate-spin rounded-[30px] border-2 border-transparent border-t-cyan-300" />
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            className="h-9 w-9 text-white"
+            aria-hidden="true"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M7.5 8.5h9M7.5 12h6M6.5 18.5 4 20v-4.25A7.5 7.5 0 0 1 5.5 3h13A2.5 2.5 0 0 1 21 5.5v8a2.5 2.5 0 0 1-2.5 2.5H10l-3.5 2.5Z"
+            />
+          </svg>
+        </div>
+
+        <p className="text-xs uppercase tracking-[0.34em] text-cyan-500">
+          Chatify
+        </p>
+        <h1 className="mt-3 font-display text-3xl font-semibold">
+          Preparing your workspace
+        </h1>
+        <p
+          className={[
+            "mt-3 text-sm leading-6",
+            isLight ? "text-slate-600" : "text-slate-300",
+          ].join(" ")}
+        >
+          {isWaking
+            ? "Waking the chat server and securing your session."
+            : "Loading your conversations and connecting realtime services."}
+        </p>
+
+        <div
+          className={[
+            "mt-7 h-1.5 overflow-hidden rounded-full",
+            isLight ? "bg-slate-200" : "bg-white/10",
+          ].join(" ")}
+        >
+          <div className="h-full w-2/3 animate-pulse rounded-full bg-gradient-to-r from-cyan-400 to-blue-600" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AuthForm({ mode, form, error, onChange, onSubmit, isLight }) {
   const inputTone = isLight
     ? "border-slate-200 bg-white/90 text-slate-950 placeholder:text-slate-400 focus:border-sky-400/60"
     : "border-white/10 bg-white/5 text-white placeholder:text-slate-500 focus:border-cyan-400/40";
@@ -165,18 +224,9 @@ function AuthForm({
 
       <button
         type="submit"
-        disabled={isSubmitting}
-        className="inline-flex w-full items-center justify-center rounded-[22px] bg-gradient-to-r from-cyan-400 via-sky-500 to-blue-600 px-4 py-4 text-sm font-semibold text-white shadow-lg shadow-cyan-950/40 transition hover:translate-y-[-1px] disabled:cursor-not-allowed disabled:opacity-70"
+        className="inline-flex w-full items-center justify-center rounded-[22px] bg-gradient-to-r from-cyan-400 via-sky-500 to-blue-600 px-4 py-4 text-sm font-semibold text-white shadow-lg shadow-cyan-950/40 transition hover:translate-y-[-1px]"
       >
-        {isSubmitting
-          ? backendStatus === "waking" || backendStatus === "connecting"
-            ? "Waiting for server..."
-            : mode === "login"
-              ? "Signing in..."
-              : "Creating account..."
-          : mode === "login"
-            ? "Login"
-            : "Register"}
+        {mode === "login" ? "Login" : "Register"}
       </button>
     </form>
   );
@@ -272,6 +322,12 @@ export default function Login() {
       setIsSubmitting(false);
     }
   };
+
+  if (isSubmitting) {
+    return (
+      <PreparingWorkspace isLight={isLight} backendStatus={backendStatus} />
+    );
+  }
 
   return (
     <>
@@ -569,8 +625,6 @@ export default function Login() {
             mode={authModalMode || "login"}
             form={form}
             error={error}
-            isSubmitting={isSubmitting}
-            backendStatus={backendStatus}
             onChange={handleChange}
             onSubmit={handleSubmit}
             isLight={isLight}
