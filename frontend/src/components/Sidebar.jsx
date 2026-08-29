@@ -44,6 +44,25 @@ function UsersIcon() {
   );
 }
 
+function InboxIcon() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      strokeWidth="1.7"
+      stroke="currentColor"
+      className="h-5 w-5"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M3.75 5.25A2.25 2.25 0 0 1 6 3h12a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 18 21H6a2.25 2.25 0 0 1-2.25-2.25V5.25Zm0 9h4.03a2.25 2.25 0 0 0 1.59-.66l.47-.47a3 3 0 0 1 4.24 0l.47.47a2.25 2.25 0 0 0 1.59.66h4.11"
+      />
+    </svg>
+  );
+}
+
 function LogoutIcon() {
   return (
     <svg
@@ -177,6 +196,8 @@ export default function Sidebar({
   onClose,
   onOpenAddFriend,
   onOpenCreateGroup,
+  onOpenRequests,
+  requestCount,
 }) {
   return (
     <>
@@ -254,6 +275,20 @@ export default function Sidebar({
               <span>New group</span>
             </button>
           </div>
+
+          <button
+            type="button"
+            onClick={onOpenRequests}
+            className="mt-2 flex w-full items-center justify-center gap-2 rounded-[20px] border border-amber-400/20 bg-amber-400/10 px-3 py-3 text-sm font-medium text-amber-100 transition hover:bg-amber-400/15"
+          >
+            <InboxIcon />
+            <span>Requests</span>
+            {requestCount > 0 ? (
+              <span className="rounded-full bg-amber-300 px-2 py-0.5 text-[11px] font-bold text-slate-950">
+                {requestCount}
+              </span>
+            ) : null}
+          </button>
 
           <div className="mt-4">
             <p className="px-1 text-xs uppercase tracking-[0.28em] text-slate-400">
@@ -344,6 +379,21 @@ export default function Sidebar({
               <span className="hidden lg:inline">New group</span>
             </button>
           </div>
+
+          <button
+            type="button"
+            onClick={onOpenRequests}
+            title="Requests"
+            className="mt-2 flex items-center justify-center gap-2 rounded-[20px] border border-amber-400/20 bg-amber-400/10 px-3 py-3 text-sm font-medium text-amber-100 transition hover:bg-amber-400/15"
+          >
+            <InboxIcon />
+            <span className="hidden lg:inline">Requests</span>
+            {requestCount > 0 ? (
+              <span className="rounded-full bg-amber-300 px-2 py-0.5 text-[11px] font-bold text-slate-950">
+                {requestCount}
+              </span>
+            ) : null}
+          </button>
 
           <div className="mt-6 hidden items-center justify-between px-2 lg:flex">
             <p className="text-xs uppercase tracking-[0.28em] text-slate-400">

@@ -13,6 +13,23 @@ const getLastMessagePreview = (chat) => {
     return "";
   }
 
+  const attachmentCount = lastMessage.attachments?.length || 0;
+
+  if (attachmentCount > 0) {
+    const allImages = lastMessage.attachments.every((attachment) =>
+      attachment.mimeType?.startsWith("image/")
+    );
+    const label = allImages
+      ? attachmentCount === 1
+        ? "Photo"
+        : `${attachmentCount} photos`
+      : attachmentCount === 1
+        ? "File"
+        : `${attachmentCount} files`;
+
+    return lastMessage.text ? `${label}: ${lastMessage.text}` : label;
+  }
+
   if (lastMessage.messageType === "image") {
     return lastMessage.text ? `Photo: ${lastMessage.text}` : "Photo";
   }
@@ -66,6 +83,7 @@ export const serializeChat = (chat, currentUserId) => {
           text: chat.lastMessage.text,
           imageUrl: chat.lastMessage.imageUrl || "",
           imageName: chat.lastMessage.imageName || "",
+          attachments: chat.lastMessage.attachments || [],
           messageType: chat.lastMessage.messageType,
           createdAt: chat.lastMessage.createdAt,
         }

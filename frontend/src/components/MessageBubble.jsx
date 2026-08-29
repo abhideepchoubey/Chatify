@@ -5,22 +5,40 @@ const timeFormatter = new Intl.DateTimeFormat("en", {
   minute: "2-digit",
 });
 
-const getDownloadName = (message) => {
-  if (message.imageName) {
-    return message.imageName;
+const formatFileSize = (bytes = 0) => {
+  if (!bytes) {
+    return "Shared file";
   }
 
-  const extension = message.imageUrl?.split(".").pop()?.split("?")[0] || "jpg";
-  return `chatify-photo-${message._id || Date.now()}.${extension}`;
+  if (bytes < 1024 * 1024) {
+    return `${Math.max(1, Math.round(bytes / 1024))} KB`;
+  }
+
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 };
 
-async function downloadImage(url, filename) {
-  const response = await fetch(url, {
-    credentials: "omit",
-  });
+const normalizeAttachments = (message) => {
+  if (Array.isArray(message.attachments) && message.attachments.length > 0) {
+    return message.attachments;
+  }
+
+  return message.imageUrl
+    ? [
+        {
+          url: message.imageUrl,
+          name: message.imageName || "Shared photo",
+          mimeType: "image/*",
+          resourceType: "image",
+        },
+      ]
+    : [];
+};
+
+async function downloadFile(url, filename) {
+  const response = await fetch(url, { credentials: "omit" });
 
   if (!response.ok) {
-    throw new Error("Unable to download image");
+    throw new Error("Unable to download file");
   }
 
   const blob = await response.blob();
@@ -35,15 +53,14 @@ async function downloadImage(url, filename) {
   window.URL.revokeObjectURL(objectUrl);
 }
 
-export default function MessageBubble({ message, currentUser }) {
+function AttachmentCard({ attachment, messageText }) {
   const [isDownloading, setIsDownloading] = useState(false);
   const [shareFeedback, setShareFeedback] = useState("");
   const shareTimerRef = useRef(null);
-  const isOwnMessage = message.sender === currentUser?.username;
-  const sentAt = message?.createdAt
-    ? timeFormatter.format(new Date(message.createdAt))
-    : "Now";
-  const hasImage = Boolean(message.imageUrl);
+  const isImage =
+    attachment.mimeType?.startsWith("image/") ||
+    attachment.resourceType === "image";
+  const extension = attachment.name?.split(".").pop()?.slice(0, 5) || "File";
 
   useEffect(() => {
     return () => {
@@ -51,7 +68,7 @@ export default function MessageBubble({ message, currentUser }) {
     };
   }, []);
 
-  const setTemporaryShareFeedback = (value) => {
+  const showShareFeedback = (value) => {
     setShareFeedback(value);
     window.clearTimeout(shareTimerRef.current);
     shareTimerRef.current = window.setTimeout(() => {
@@ -60,42 +77,102 @@ export default function MessageBubble({ message, currentUser }) {
   };
 
   const handleDownload = async () => {
-    if (!message.imageUrl || isDownloading) {
+    if (isDownloading) {
       return;
     }
 
     try {
       setIsDownloading(true);
-      await downloadImage(message.imageUrl, getDownloadName(message));
+      await downloadFile(attachment.url, attachment.name || "chatify-file");
     } catch (_error) {
-      window.open(message.imageUrl, "_blank", "noopener,noreferrer");
+      window.open(attachment.url, "_blank", "noopener,noreferrer");
     } finally {
       setIsDownloading(false);
     }
   };
 
   const handleShare = async () => {
-    if (!message.imageUrl) {
-      return;
-    }
-
     try {
       if (navigator.share) {
         await navigator.share({
-          title: message.imageName || "Chatify photo",
-          text: message.text || "Shared from Chatify",
-          url: message.imageUrl,
+          title: attachment.name || "Chatify file",
+          text: messageText || "Shared from Chatify",
+          url: attachment.url,
         });
-        setTemporaryShareFeedback("Shared");
+        showShareFeedback("Shared");
         return;
       }
 
-      await navigator.clipboard.writeText(message.imageUrl);
-      setTemporaryShareFeedback("Copied");
+      await navigator.clipboard.writeText(attachment.url);
+      showShareFeedback("Copied");
     } catch (_error) {
-      setTemporaryShareFeedback("Ready");
+      showShareFeedback("Ready");
     }
   };
+
+  return (
+    <div className="overflow-hidden rounded-2xl border border-white/10 bg-slate-950/20">
+      {isImage ? (
+        <a href={attachment.url} target="_blank" rel="noreferrer">
+          <img
+            src={attachment.url}
+            alt={attachment.name || "Shared image"}
+            className="max-h-[22rem] w-full object-cover"
+            loading="lazy"
+          />
+        </a>
+      ) : (
+        <a
+          href={attachment.url}
+          target="_blank"
+          rel="noreferrer"
+          className="flex items-center gap-3 p-4 transition hover:bg-white/5"
+        >
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-cyan-400/15 text-xs font-bold uppercase text-cyan-100">
+            {extension}
+          </div>
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold text-white">
+              {attachment.name || "Shared file"}
+            </p>
+            <p className="mt-1 text-xs text-slate-400">
+              {formatFileSize(attachment.size)}
+            </p>
+          </div>
+        </a>
+      )}
+
+      <div className="flex flex-wrap items-center justify-between gap-3 px-3 py-2">
+        <p className="min-w-0 flex-1 truncate text-xs text-slate-200/80">
+          {attachment.name || "Shared file"}
+        </p>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={handleShare}
+            className="rounded-full border border-white/10 bg-white/10 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-white transition hover:bg-white/15"
+          >
+            {shareFeedback || "Share"}
+          </button>
+          <button
+            type="button"
+            onClick={handleDownload}
+            className="rounded-full border border-white/10 bg-white/10 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-white transition hover:bg-white/15"
+          >
+            {isDownloading ? "Saving" : "Download"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function MessageBubble({ message, currentUser }) {
+  const isOwnMessage = message.sender === currentUser?.username;
+  const sentAt = message?.createdAt
+    ? timeFormatter.format(new Date(message.createdAt))
+    : "Now";
+  const attachments = normalizeAttachments(message);
 
   return (
     <div
@@ -106,7 +183,7 @@ export default function MessageBubble({ message, currentUser }) {
     >
       <div
         className={[
-          "max-w-[min(84%,40rem)] rounded-[24px] px-4 py-3 shadow-lg ring-1 ring-inset",
+          "max-w-[min(88%,42rem)] rounded-[24px] px-4 py-3 shadow-lg ring-1 ring-inset",
           isOwnMessage
             ? "rounded-br-md bg-gradient-to-br from-cyan-400 via-sky-500 to-blue-600 text-white ring-cyan-300/30"
             : "rounded-bl-md bg-white/8 text-slate-100 ring-white/10 backdrop-blur-xl",
@@ -118,38 +195,15 @@ export default function MessageBubble({ message, currentUser }) {
           </p>
         ) : null}
 
-        {hasImage ? (
-          <div className="mb-3 overflow-hidden rounded-2xl border border-white/10 bg-slate-950/20">
-            <a href={message.imageUrl} target="_blank" rel="noreferrer">
-              <img
-                src={message.imageUrl}
-                alt={message.imageName || "Shared photo"}
-                className="max-h-[22rem] w-full rounded-2xl object-cover"
-                loading="lazy"
+        {attachments.length > 0 ? (
+          <div className="mb-3 grid gap-2">
+            {attachments.map((attachment, index) => (
+              <AttachmentCard
+                key={`${attachment.url}-${index}`}
+                attachment={attachment}
+                messageText={message.text}
               />
-            </a>
-
-            <div className="flex flex-wrap items-center justify-between gap-3 px-3 py-2">
-              <p className="min-w-0 flex-1 truncate text-xs text-slate-200/80">
-                {message.imageName || "Shared photo"}
-              </p>
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={handleShare}
-                  className="rounded-full border border-white/10 bg-white/10 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-white transition hover:bg-white/15"
-                >
-                  {shareFeedback || "Share"}
-                </button>
-                <button
-                  type="button"
-                  onClick={handleDownload}
-                  className="rounded-full border border-white/10 bg-white/10 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-white transition hover:bg-white/15"
-                >
-                  {isDownloading ? "Saving" : "Download"}
-                </button>
-              </div>
-            </div>
+            ))}
           </div>
         ) : null}
 

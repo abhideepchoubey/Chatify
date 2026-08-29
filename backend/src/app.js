@@ -5,6 +5,7 @@ import cookieParser from "cookie-parser";
 import authRoutes from "./routes/auth.routes.js";
 import chatRoutes from "./routes/chat.routes.js";
 import messageRoutes from "./routes/message.routes.js";
+import requestRoutes from "./routes/request.routes.js";
 import userRoutes from "./routes/user.routes.js";
 import { ApiError } from "./utils/ApiError.js";
 
@@ -87,6 +88,7 @@ app.get("/api/health", (_req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/chats", chatRoutes);
 app.use("/api/messages", messageRoutes);
+app.use("/api/requests", requestRoutes);
 app.use("/api/users", userRoutes);
 
 app.get("/", (_req, res) => {
@@ -94,7 +96,8 @@ app.get("/", (_req, res) => {
 });
 
 app.use((error, _req, res, _next) => {
-  const statusCode = error.statusCode || 500;
+  const statusCode =
+    error.statusCode || (error.name === "MulterError" ? 400 : 500);
   const message =
     error instanceof ApiError
       ? error.message

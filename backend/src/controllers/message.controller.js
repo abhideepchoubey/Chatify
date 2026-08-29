@@ -46,8 +46,9 @@ export const getMessages = asyncHandler(async (req, res) => {
   res.json(new ApiResponse(200, messages, "Messages fetched successfully"));
 });
 
-export const uploadPhoto = asyncHandler(async (req, res) => {
+export const uploadAttachments = asyncHandler(async (req, res) => {
   const { room } = req.body;
+  const files = req.files || [];
 
   if (!room) {
     throw new ApiError(400, "Chat is required");
@@ -55,8 +56,8 @@ export const uploadPhoto = asyncHandler(async (req, res) => {
 
   await ensureChatAccess(room, req.user.id);
 
-  if (!req.file?.buffer) {
-    throw new ApiError(400, "Photo is required");
+  if (files.length === 0) {
+    throw new ApiError(400, "Select at least one file");
   }
 
   if (!cloudinaryConfigured) {
@@ -64,21 +65,26 @@ export const uploadPhoto = asyncHandler(async (req, res) => {
   }
 
   try {
-    const uploadResult = await uploadBufferToCloudinary(req.file.buffer, {
-      resourceType: "image",
-    });
+    const attachments = await Promise.all(
+      files.map(async (file) => {
+        const uploadResult = await uploadBufferToCloudinary(file.buffer, {
+          resourceType: "auto",
+        });
+
+        return {
+          url: uploadResult.secure_url || uploadResult.url,
+          name: file.originalname,
+          mimeType: file.mimetype || "application/octet-stream",
+          size: file.size || uploadResult.bytes || 0,
+          resourceType: uploadResult.resource_type || "raw",
+        };
+      })
+    );
 
     res.json(
-      new ApiResponse(
-        200,
-        {
-          imageUrl: uploadResult.secure_url || uploadResult.url,
-          imageName: req.file.originalname,
-        },
-        "Photo uploaded successfully"
-      )
+      new ApiResponse(200, { attachments }, "Files uploaded successfully")
     );
   } finally {
-    await cleanupUploadedFile(req.file);
+    await Promise.all(files.map(cleanupUploadedFile));
   }
 });

@@ -18,7 +18,7 @@ export default function CreateGroupModal({
       isOpen={isOpen}
       onClose={onClose}
       title="Create Group"
-      description="Pick at least two friends, name the space, and create a persistent group chat."
+      description="Pick at least two friends and send group invitations. Each person joins only after accepting."
     >
       <div className="space-y-4">
         <label className="block">
@@ -115,7 +115,7 @@ export default function CreateGroupModal({
           disabled={isSubmitting}
           className="inline-flex w-full items-center justify-center rounded-[22px] bg-gradient-to-r from-cyan-400 via-sky-500 to-blue-600 px-4 py-4 text-sm font-semibold text-white shadow-lg shadow-cyan-950/40 transition hover:translate-y-[-1px] disabled:cursor-not-allowed disabled:opacity-70"
         >
-          {isSubmitting ? "Creating group..." : "Create group"}
+          {isSubmitting ? "Sending invitations..." : "Create and invite"}
         </button>
       </div>
     </ModalShell>

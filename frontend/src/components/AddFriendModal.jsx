@@ -23,7 +23,7 @@ export default function AddFriendModal({
       isOpen={isOpen}
       onClose={onClose}
       title="Add Friend"
-      description="Search by username and add people directly into your chat list."
+      description="Search by username and send a friend request. They are added only after accepting."
     >
       <div className="space-y-4">
         <label className="block">
@@ -94,9 +94,13 @@ export default function AddFriendModal({
                     <p className="text-sm text-slate-300">
                       {result.isFriend
                         ? "Already in your friends"
-                        : result.online
-                          ? "Online now"
-                          : "Offline"}
+                        : result.requestStatus === "sent"
+                          ? "Friend request sent"
+                          : result.requestStatus === "received"
+                            ? "Check your requests to respond"
+                            : result.online
+                              ? "Online now"
+                              : "Offline"}
                     </p>
                   </div>
 
@@ -104,15 +108,21 @@ export default function AddFriendModal({
                     type="button"
                     onClick={() => onAddFriend(result)}
                     disabled={
-                      result.isFriend || submittingUserId === result._id
+                      result.isFriend ||
+                      result.requestStatus !== "none" ||
+                      submittingUserId === result._id
                     }
                     className="rounded-[18px] border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {result.isFriend
                       ? "Added"
-                      : submittingUserId === result._id
-                        ? "Adding..."
-                        : "Add"}
+                      : result.requestStatus === "sent"
+                        ? "Sent"
+                        : result.requestStatus === "received"
+                          ? "Pending"
+                          : submittingUserId === result._id
+                            ? "Sending..."
+                            : "Request"}
                   </button>
                 </div>
               ))

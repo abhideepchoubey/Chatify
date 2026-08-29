@@ -22,6 +22,10 @@ export default function setupSocket(io) {
           return;
         }
 
+        if (currentUser.id) {
+          socket.join(`user:${currentUser.id}`);
+        }
+
         await User.updateOne(
           { username: currentUser.username },
           { online: true }
@@ -51,23 +55,58 @@ export default function setupSocket(io) {
     socket.on("send_message", async (data) => {
       try {
         const text = data?.text?.trim();
+        const attachments = Array.isArray(data?.attachments)
+          ? data.attachments
+              .filter((attachment) => attachment?.url && attachment?.name)
+              .slice(0, 5)
+          : [];
+        const legacyImage =
+          attachments.length === 0 && data?.imageUrl
+            ? [
+                {
+                  url: data.imageUrl,
+                  name: data.imageName || "Shared image",
+                  mimeType: "image/*",
+                  resourceType: "image",
+                },
+              ]
+            : [];
+        const messageAttachments = [...attachments, ...legacyImage];
         const chat = await Chat.findOne({
           _id: data?.room,
           ...(currentUser?.id ? { members: currentUser.id } : {}),
         });
 
-        if (!data?.room || (!text && !data?.imageUrl) || !chat) {
+        if (
+          !data?.room ||
+          (!text && messageAttachments.length === 0) ||
+          !chat
+        ) {
           return;
         }
+
+        const imageAttachments = messageAttachments.filter((attachment) =>
+          attachment.mimeType?.startsWith("image/")
+        );
+        const firstImage = imageAttachments[0];
+        const messageType =
+          messageAttachments.length === 0
+            ? "text"
+            : imageAttachments.length === messageAttachments.length
+              ? "image"
+              : text || imageAttachments.length > 0
+                ? "mixed"
+                : "file";
 
         const messagePayload = {
           senderId: currentUser?.id,
           sender: currentUser?.username || data?.sender,
           room: data.room,
           text,
-          imageUrl: data?.imageUrl || "",
-          imageName: data?.imageName || "",
-          messageType: data?.imageUrl ? "image" : "text",
+          imageUrl: firstImage?.url || "",
+          imageName: firstImage?.name || "",
+          attachments: messageAttachments,
+          messageType,
         };
         const message = await Message.create(messagePayload);
 

@@ -1,14 +1,27 @@
 import { useEffect, useRef } from "react";
 
+const formatFileSize = (bytes = 0) => {
+  if (bytes < 1024) {
+    return `${bytes} B`;
+  }
+
+  if (bytes < 1024 * 1024) {
+    return `${Math.round(bytes / 1024)} KB`;
+  }
+
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+};
+
 export default function InputBar({
   value,
   onChange,
   onSend,
   disabled,
   placeholder,
-  selectedImage,
-  onSelectImage,
-  onClearImage,
+  selectedFiles,
+  onSelectFiles,
+  onRemoveFile,
+  onClearFiles,
   isUploadingImage,
 }) {
   const textareaRef = useRef(null);
@@ -38,11 +51,10 @@ export default function InputBar({
         <input
           ref={fileInputRef}
           type="file"
-          accept="image/*"
+          multiple
           className="hidden"
           onChange={(event) => {
-            const [file] = event.target.files || [];
-            onSelectImage(file || null);
+            onSelectFiles(event.target.files);
             event.target.value = "";
           }}
         />
@@ -95,33 +107,59 @@ export default function InputBar({
         </button>
       </div>
 
-      {selectedImage ? (
-        <div className="mt-3 flex items-center justify-between gap-3 rounded-[22px] border border-white/10 bg-white/5 px-3 py-3">
-          <div className="flex min-w-0 items-center gap-3">
-            <img
-              src={selectedImage.preview}
-              alt={selectedImage.file.name}
-              className="h-12 w-12 rounded-2xl object-cover"
-            />
-            <div className="min-w-0">
-              <p className="truncate text-sm font-medium text-white">
-                {selectedImage.file.name}
-              </p>
-              <p className="text-xs text-slate-400">
-                {isUploadingImage
-                  ? "Uploading photo..."
-                  : "Photo ready to send"}
-              </p>
-            </div>
+      {selectedFiles.length > 0 ? (
+        <div className="mt-3 rounded-[22px] border border-white/10 bg-white/5 p-3">
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-300">
+              {isUploadingImage
+                ? "Uploading files..."
+                : `${selectedFiles.length} file${selectedFiles.length === 1 ? "" : "s"} ready`}
+            </p>
+            <button
+              type="button"
+              onClick={onClearFiles}
+              className="text-xs font-medium text-slate-400 transition hover:text-white"
+            >
+              Clear all
+            </button>
           </div>
 
-          <button
-            type="button"
-            onClick={onClearImage}
-            className="rounded-[16px] border border-white/10 bg-white/5 px-3 py-2 text-xs font-medium text-slate-200 transition hover:bg-white/10"
-          >
-            Remove
-          </button>
+          <div className="scrollbar-thin flex max-h-28 gap-2 overflow-x-auto pb-1">
+            {selectedFiles.map((entry, index) => (
+              <div
+                key={`${entry.file.name}-${entry.file.lastModified}-${index}`}
+                className="flex min-w-[13rem] items-center gap-3 rounded-[18px] border border-white/10 bg-slate-950/35 p-2"
+              >
+                {entry.preview ? (
+                  <img
+                    src={entry.preview}
+                    alt={entry.file.name}
+                    className="h-11 w-11 shrink-0 rounded-xl object-cover"
+                  />
+                ) : (
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-cyan-400/10 text-xs font-bold uppercase text-cyan-200">
+                    {entry.file.name.split(".").pop()?.slice(0, 4) || "File"}
+                  </div>
+                )}
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-xs font-medium text-white">
+                    {entry.file.name}
+                  </p>
+                  <p className="mt-1 text-[11px] text-slate-400">
+                    {formatFileSize(entry.file.size)}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => onRemoveFile(index)}
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/10 text-sm text-slate-300 transition hover:bg-white/10 hover:text-white"
+                  aria-label={`Remove ${entry.file.name}`}
+                >
+                  x
+                </button>
+              </div>
+            ))}
+          </div>
         </div>
       ) : null}
     </div>

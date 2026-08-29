@@ -18,9 +18,10 @@ export default function ChatBox({
   onOpenSidebar,
   onOpenAddFriend,
   onOpenCreateGroup,
-  selectedImage,
-  onSelectImage,
-  onClearImage,
+  selectedFiles,
+  onSelectFiles,
+  onRemoveFile,
+  onClearFiles,
   isUploadingImage,
 }) {
   const endRef = useRef(null);
@@ -196,9 +197,10 @@ export default function ChatBox({
         onSend={onSendMessage}
         disabled={isSendingDisabled}
         placeholder={`Message ${chat.name}`}
-        selectedImage={selectedImage}
-        onSelectImage={onSelectImage}
-        onClearImage={onClearImage}
+        selectedFiles={selectedFiles}
+        onSelectFiles={onSelectFiles}
+        onRemoveFile={onRemoveFile}
+        onClearFiles={onClearFiles}
         isUploadingImage={isUploadingImage}
       />
     </div>

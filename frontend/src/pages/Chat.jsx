@@ -4,6 +4,7 @@ import Sidebar from "../components/Sidebar";
 import ChatBox from "../components/ChatBox";
 import AddFriendModal from "../components/AddFriendModal";
 import CreateGroupModal from "../components/CreateGroupModal";
+import RequestsModal from "../components/RequestsModal";
 import { useAuth } from "../context/AuthContext";
 import socket, { connectSocket, disconnectSocket } from "../socket/socket";
 import { getMessagePreview, sortChats } from "../utils/chat";
@@ -58,6 +59,7 @@ const applyMessageToChats = (currentChats, message) =>
               text: message.text,
               imageUrl: message.imageUrl || "",
               imageName: message.imageName || "",
+              attachments: message.attachments || [],
               messageType:
                 message.messageType || (message.imageUrl ? "image" : "text"),
               createdAt: message.createdAt,
@@ -82,7 +84,7 @@ export default function Chat() {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isBootstrapping, setIsBootstrapping] = useState(true);
-  const [selectedImage, setSelectedImage] = useState(null);
+  const [selectedFiles, setSelectedFiles] = useState([]);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [isAddFriendOpen, setIsAddFriendOpen] = useState(false);
   const [userSearchQuery, setUserSearchQuery] = useState("");
@@ -96,11 +98,17 @@ export default function Chat() {
   const [selectedGroupMemberIds, setSelectedGroupMemberIds] = useState([]);
   const [groupError, setGroupError] = useState("");
   const [isCreatingGroup, setIsCreatingGroup] = useState(false);
+  const [requests, setRequests] = useState([]);
+  const [isRequestsOpen, setIsRequestsOpen] = useState(false);
+  const [isLoadingRequests, setIsLoadingRequests] = useState(false);
+  const [requestError, setRequestError] = useState("");
+  const [actionRequestId, setActionRequestId] = useState("");
   const loadedRoomsRef = useRef(new Set());
   const activeRoomRef = useRef("");
   const previousRoomRef = useRef("");
   const typingTimerRef = useRef({});
   const typingEmitTimerRef = useRef(null);
+  const selectedFilesRef = useRef([]);
   const activeChat = chats.find((chat) => chat.id === activeChatId) || null;
   const messages = activeChat ? messagesByRoom[activeChat.room] || [] : [];
   const draft = activeChat ? drafts[activeChat.room] || "" : "";
@@ -111,41 +119,82 @@ export default function Chat() {
   const isSendingDisabled =
     !activeChat ||
     connectionState !== "Live" ||
-    (!draft.trim() && !selectedImage) ||
+    (!draft.trim() && selectedFiles.length === 0) ||
     isUploadingImage;
 
   useEffect(() => {
+    selectedFilesRef.current = selectedFiles;
+  }, [selectedFiles]);
+
+  useEffect(() => {
     return () => {
-      if (selectedImage?.preview) {
-        URL.revokeObjectURL(selectedImage.preview);
-      }
+      selectedFilesRef.current.forEach((entry) => {
+        if (entry.preview) {
+          URL.revokeObjectURL(entry.preview);
+        }
+      });
     };
-  }, [selectedImage]);
+  }, []);
 
-  const clearSelectedImage = () => {
-    setSelectedImage((current) => {
-      if (current?.preview) {
-        URL.revokeObjectURL(current.preview);
-      }
+  const clearSelectedFiles = () => {
+    setSelectedFiles((current) => {
+      current.forEach((entry) => {
+        if (entry.preview) {
+          URL.revokeObjectURL(entry.preview);
+        }
+      });
 
-      return null;
+      return [];
     });
   };
 
-  const handleSelectImage = (file) => {
-    setSelectedImage((current) => {
-      if (current?.preview) {
-        URL.revokeObjectURL(current.preview);
-      }
+  const handleSelectFiles = (files) => {
+    const incomingFiles = Array.from(files || []);
+    const validFiles = incomingFiles.filter(
+      (file) => file.size <= 10 * 1024 * 1024
+    );
 
-      if (!file) {
-        return null;
-      }
-
-      return {
+    setSelectedFiles((current) => {
+      const availableSlots = Math.max(0, 5 - current.length);
+      const acceptedFiles = validFiles.slice(0, availableSlots).map((file) => ({
         file,
-        preview: URL.createObjectURL(file),
-      };
+        preview: file.type.startsWith("image/")
+          ? URL.createObjectURL(file)
+          : "",
+      }));
+
+      return [...current, ...acceptedFiles];
+    });
+
+    if (!activeChat?.room) {
+      return;
+    }
+
+    if (incomingFiles.some((file) => file.size > 10 * 1024 * 1024)) {
+      setRoomErrors((current) => ({
+        ...current,
+        [activeChat.room]: "Each file must be 10 MB or smaller.",
+      }));
+      return;
+    }
+
+    if (validFiles.length + selectedFiles.length > 5) {
+      setRoomErrors((current) => ({
+        ...current,
+        [activeChat.room]: "You can send up to 5 files at a time.",
+      }));
+    }
+  };
+
+  const handleRemoveSelectedFile = (index) => {
+    setSelectedFiles((current) => {
+      const target = current[index];
+
+      if (target?.preview) {
+        URL.revokeObjectURL(target.preview);
+      }
+
+      return current.filter((_, entryIndex) => entryIndex !== index);
     });
   };
 
@@ -181,6 +230,16 @@ export default function Chat() {
     return nextFriends;
   };
 
+  const refreshRequests = async () => {
+    const response = await api.get("/requests");
+    const nextRequests = Array.isArray(response.data?.data)
+      ? response.data.data
+      : [];
+
+    setRequests(nextRequests);
+    return nextRequests;
+  };
+
   useEffect(() => {
     if (!user?._id) {
       return undefined;
@@ -191,7 +250,11 @@ export default function Chat() {
     const bootstrap = async () => {
       try {
         setIsBootstrapping(true);
-        await Promise.all([refreshChats(), refreshFriends()]);
+        await Promise.all([
+          refreshChats(),
+          refreshFriends(),
+          refreshRequests(),
+        ]);
       } catch (error) {
         if (!isCancelled) {
           console.error(getApiMessage(error));
@@ -213,7 +276,7 @@ export default function Chat() {
   useEffect(() => {
     activeRoomRef.current = activeChat?.room || "";
     setIsSidebarOpen(false);
-    clearSelectedImage();
+    clearSelectedFiles();
 
     if (!socket.connected) {
       previousRoomRef.current = activeChat?.room || "";
@@ -352,12 +415,26 @@ export default function Chat() {
       }
     };
 
+    const handleRequestsChanged = async () => {
+      try {
+        await Promise.all([
+          refreshRequests(),
+          refreshChats(),
+          refreshFriends(),
+        ]);
+      } catch (error) {
+        console.error(getApiMessage(error));
+      }
+    };
+
     realtime.on("connect", handleConnect);
     realtime.on("disconnect", handleDisconnect);
     realtime.on("connect_error", handleConnectError);
     realtime.on("receive_message", handleReceiveMessage);
     realtime.on("typing", handleTyping);
     realtime.on("user_status", handleUserStatus);
+    realtime.on("request_received", handleRequestsChanged);
+    realtime.on("request_updated", handleRequestsChanged);
 
     if (realtime.connected) {
       handleConnect();
@@ -373,6 +450,8 @@ export default function Chat() {
       realtime.off("receive_message", handleReceiveMessage);
       realtime.off("typing", handleTyping);
       realtime.off("user_status", handleUserStatus);
+      realtime.off("request_received", handleRequestsChanged);
+      realtime.off("request_updated", handleRequestsChanged);
       disconnectSocket();
       Object.values(typingTimerRef.current).forEach(clearTimeout);
       clearTimeout(typingEmitTimerRef.current);
@@ -457,22 +536,24 @@ export default function Chat() {
 
     const text = draft.trim();
 
-    if ((!text && !selectedImage) || !socket.connected) {
+    if ((!text && selectedFiles.length === 0) || !socket.connected) {
       return;
     }
 
     try {
-      let uploadedImage = null;
+      let attachments = [];
 
       setRoomErrors((current) => ({
         ...current,
         [activeChat.room]: "",
       }));
 
-      if (selectedImage) {
+      if (selectedFiles.length > 0) {
         setIsUploadingImage(true);
         const formData = new FormData();
-        formData.append("image", selectedImage.file);
+        selectedFiles.forEach((entry) => {
+          formData.append("files", entry.file);
+        });
         formData.append("room", activeChat.room);
 
         const response = await api.post("/messages/upload", formData, {
@@ -481,21 +562,22 @@ export default function Chat() {
           },
         });
 
-        uploadedImage = response.data?.data || null;
+        attachments = Array.isArray(response.data?.data?.attachments)
+          ? response.data.data.attachments
+          : [];
       }
 
       socket.emit("send_message", {
         room: activeChat.room,
         text,
-        imageUrl: uploadedImage?.imageUrl || "",
-        imageName: uploadedImage?.imageName || "",
+        attachments,
       });
 
       setDrafts((current) => ({
         ...current,
         [activeChat.room]: "",
       }));
-      clearSelectedImage();
+      clearSelectedFiles();
     } catch (error) {
       setRoomErrors((current) => ({
         ...current,
@@ -522,18 +604,17 @@ export default function Chat() {
       setFriendActionUserId(targetUser._id);
       setAddFriendError("");
 
-      const response = await api.post("/users/friends", {
+      await api.post("/requests/friends", {
         userId: targetUser._id,
       });
-      const nextActiveId = response.data?.data?.chat?.id || "";
 
-      await Promise.all([refreshChats(nextActiveId), refreshFriends()]);
       setUserSearchResults((current) =>
         current.map((entry) =>
-          entry._id === targetUser._id ? { ...entry, isFriend: true } : entry
+          entry._id === targetUser._id
+            ? { ...entry, requestStatus: "sent" }
+            : entry
         )
       );
-      setIsAddFriendOpen(false);
     } catch (error) {
       setAddFriendError(getApiMessage(error));
     } finally {
@@ -573,6 +654,33 @@ export default function Chat() {
     }
   };
 
+  const handleOpenRequests = async () => {
+    setIsRequestsOpen(true);
+    setIsLoadingRequests(true);
+    setRequestError("");
+
+    try {
+      await refreshRequests();
+    } catch (error) {
+      setRequestError(getApiMessage(error));
+    } finally {
+      setIsLoadingRequests(false);
+    }
+  };
+
+  const handleRequestResponse = async (requestId, action) => {
+    try {
+      setActionRequestId(requestId);
+      setRequestError("");
+      await api.patch(`/requests/${requestId}`, { action });
+      await Promise.all([refreshRequests(), refreshChats(), refreshFriends()]);
+    } catch (error) {
+      setRequestError(getApiMessage(error));
+    } finally {
+      setActionRequestId("");
+    }
+  };
+
   return (
     <>
       <div className="relative h-dvh overflow-hidden p-3 sm:p-5">
@@ -597,6 +705,8 @@ export default function Chat() {
               setGroupError("");
               setIsCreateGroupOpen(true);
             }}
+            onOpenRequests={handleOpenRequests}
+            requestCount={requests.length}
           />
 
           {isBootstrapping ? (
@@ -633,9 +743,10 @@ export default function Chat() {
                 setIsAddFriendOpen(true);
               }}
               onOpenCreateGroup={() => setIsCreateGroupOpen(true)}
-              selectedImage={selectedImage}
-              onSelectImage={handleSelectImage}
-              onClearImage={clearSelectedImage}
+              selectedFiles={selectedFiles}
+              onSelectFiles={handleSelectFiles}
+              onRemoveFile={handleRemoveSelectedFile}
+              onClearFiles={clearSelectedFiles}
               isUploadingImage={isUploadingImage}
             />
           )}
@@ -672,6 +783,16 @@ export default function Chat() {
         onSubmit={handleCreateGroup}
         isSubmitting={isCreatingGroup}
         error={groupError}
+      />
+
+      <RequestsModal
+        isOpen={isRequestsOpen}
+        onClose={() => setIsRequestsOpen(false)}
+        requests={requests}
+        loading={isLoadingRequests}
+        error={requestError}
+        actionRequestId={actionRequestId}
+        onRespond={handleRequestResponse}
       />
     </>
   );

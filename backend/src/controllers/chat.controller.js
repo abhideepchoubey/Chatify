@@ -1,4 +1,5 @@
 import { Chat } from "../models/chat.models.js";
+import { ConnectionRequest } from "../models/request.models.js";
 import { User } from "../models/user.models.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
@@ -16,7 +17,8 @@ const chatPopulate = [
   },
   {
     path: "lastMessage",
-    select: "_id sender text imageUrl imageName messageType createdAt",
+    select:
+      "_id sender text imageUrl imageName attachments messageType createdAt",
   },
 ];
 
@@ -62,26 +64,50 @@ export const createGroupChat = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Group name is required");
   }
 
-  const uniqueMemberIds = [...new Set([req.user.id, ...memberIds].map(String))];
+  const inviteeIds = [
+    ...new Set(
+      memberIds.map(String).filter((id) => id !== String(req.user.id))
+    ),
+  ];
 
-  if (uniqueMemberIds.length < 3) {
+  if (inviteeIds.length < 2) {
     throw new ApiError(400, "Select at least 2 friends to create a group");
   }
 
-  const users = await User.find({
-    _id: { $in: uniqueMemberIds },
-  }).select("_id");
+  const creator = await User.findById(req.user.id).select("friends");
+  const friendIds = new Set(
+    (creator?.friends || []).map((friendId) => String(friendId))
+  );
 
-  if (users.length !== uniqueMemberIds.length) {
-    throw new ApiError(404, "One or more users don't exist");
+  if (inviteeIds.some((userId) => !friendIds.has(userId))) {
+    throw new ApiError(400, "You can only invite accepted friends");
   }
 
   const chat = await Chat.create({
     type: "group",
     name: trimmedName,
     photo,
-    members: uniqueMemberIds,
+    members: [req.user.id],
     admins: [req.user.id],
+  });
+
+  try {
+    await ConnectionRequest.insertMany(
+      inviteeIds.map((recipient) => ({
+        type: "group",
+        sender: req.user.id,
+        recipient,
+        chat: chat._id,
+      }))
+    );
+  } catch (error) {
+    await Chat.deleteOne({ _id: chat._id });
+    throw error;
+  }
+
+  const io = req.app.get("io");
+  inviteeIds.forEach((recipient) => {
+    io?.to(`user:${recipient}`).emit("request_received");
   });
 
   const populatedChat = await Chat.findById(chat._id).populate(chatPopulate);
@@ -90,7 +116,7 @@ export const createGroupChat = asyncHandler(async (req, res) => {
     new ApiResponse(
       200,
       serializeChat(populatedChat, req.user.id),
-      "Group created successfully"
+      "Group created and invitations sent"
     )
   );
 });

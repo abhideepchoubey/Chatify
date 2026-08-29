@@ -28,6 +28,23 @@ export const getMessagePreview = (message) => {
     return "";
   }
 
+  const attachmentCount = message.attachments?.length || 0;
+
+  if (attachmentCount > 0) {
+    const allImages = message.attachments.every((attachment) =>
+      attachment.mimeType?.startsWith("image/")
+    );
+    const label = allImages
+      ? attachmentCount === 1
+        ? "Photo"
+        : `${attachmentCount} photos`
+      : attachmentCount === 1
+        ? "File"
+        : `${attachmentCount} files`;
+
+    return message.text ? `${label}: ${message.text}` : label;
+  }
+
   if (message.messageType === "image" || message.imageUrl) {
     return message.text ? `Photo: ${message.text}` : "Photo";
   }

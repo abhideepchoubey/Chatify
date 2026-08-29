@@ -1,17 +1,16 @@
 import { User } from "../models/user.models.js";
+import { ConnectionRequest } from "../models/request.models.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
-import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
-import { ensureDirectChat } from "./chat.controller.js";
-import { serializeChat } from "../utils/chatSerializer.js";
 
-const serializeUser = (user, friendIds) => ({
+const serializeUser = (user, friendIds, requestStatusByUser) => ({
   _id: String(user._id),
   username: user.username,
   online: Boolean(user.online),
   lastSeen: user.lastSeen || null,
   avatar: user.avatar || "",
   isFriend: friendIds.has(String(user._id)),
+  requestStatus: requestStatusByUser.get(String(user._id)) || "none",
 });
 
 export const searchUsers = asyncHandler(async (req, res) => {
@@ -32,11 +31,30 @@ export const searchUsers = asyncHandler(async (req, res) => {
     .select("_id username online lastSeen avatar")
     .sort({ online: -1, username: 1 })
     .limit(query ? 12 : 20);
+  const userIds = users.map((user) => user._id);
+  const pendingRequests = await ConnectionRequest.find({
+    type: "friend",
+    status: "pending",
+    $or: [
+      { sender: req.user.id, recipient: { $in: userIds } },
+      { sender: { $in: userIds }, recipient: req.user.id },
+    ],
+  }).select("sender recipient");
+  const requestStatusByUser = new Map();
+
+  pendingRequests.forEach((request) => {
+    const isOutgoing = String(request.sender) === String(req.user.id);
+    const otherUserId = isOutgoing ? request.recipient : request.sender;
+    requestStatusByUser.set(
+      String(otherUserId),
+      isOutgoing ? "sent" : "received"
+    );
+  });
 
   res.json(
     new ApiResponse(
       200,
-      users.map((user) => serializeUser(user, friendIds)),
+      users.map((user) => serializeUser(user, friendIds, requestStatusByUser)),
       "Users fetched successfully"
     )
   );
@@ -57,56 +75,4 @@ export const getFriends = asyncHandler(async (req, res) => {
   }));
 
   res.json(new ApiResponse(200, friends, "Friends fetched successfully"));
-});
-
-export const addFriend = asyncHandler(async (req, res) => {
-  const { userId, username } = req.body;
-  const currentUser = await User.findById(req.user.id).select(
-    "_id friends username"
-  );
-  const friend = await User.findOne(
-    userId ? { _id: userId } : { username: username?.trim() }
-  ).select("_id username online lastSeen avatar");
-
-  if (!friend) {
-    throw new ApiError(404, "User doesn't exist");
-  }
-
-  if (String(friend._id) === String(req.user.id)) {
-    throw new ApiError(400, "You can't add yourself");
-  }
-
-  const isFriend = (currentUser?.friends || []).some(
-    (friendId) => String(friendId) === String(friend._id)
-  );
-
-  if (!isFriend) {
-    await User.updateOne(
-      { _id: req.user.id },
-      { $addToSet: { friends: friend._id } }
-    );
-    await User.updateOne(
-      { _id: friend._id },
-      { $addToSet: { friends: req.user.id } }
-    );
-  }
-
-  const directChat = await ensureDirectChat(req.user.id, friend._id);
-
-  res.json(
-    new ApiResponse(
-      200,
-      {
-        friend: {
-          _id: String(friend._id),
-          username: friend.username,
-          online: Boolean(friend.online),
-          lastSeen: friend.lastSeen || null,
-          avatar: friend.avatar || "",
-        },
-        chat: serializeChat(directChat, req.user.id),
-      },
-      isFriend ? "User already added" : "Friend added successfully"
-    )
-  );
 });

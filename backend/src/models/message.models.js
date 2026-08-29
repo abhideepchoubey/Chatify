@@ -23,9 +23,18 @@ const messageSchema = new mongoose.Schema(
     },
     imageUrl: String,
     imageName: String,
+    attachments: [
+      {
+        url: { type: String, required: true },
+        name: { type: String, required: true },
+        mimeType: { type: String, default: "application/octet-stream" },
+        size: { type: Number, default: 0 },
+        resourceType: { type: String, default: "raw" },
+      },
+    ],
     messageType: {
       type: String,
-      enum: ["text", "image"],
+      enum: ["text", "image", "file", "mixed"],
       default: "text",
     },
   },
