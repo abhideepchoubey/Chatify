@@ -11,6 +11,10 @@ import { ApiError } from "./utils/ApiError.js";
 
 const app = express();
 const fallbackOrigins = ["http://localhost:5173", "http://127.0.0.1:5173"];
+const productionOrigins = [
+  "https://chatify-abhideep.vercel.app",
+  "https://chatify.abhideep.shop",
+];
 const configuredOriginValue = process.env.CORS_ORIGIN;
 const allowAllOrigins = configuredOriginValue === "*";
 const configuredOrigins =
@@ -21,9 +25,13 @@ const configuredOrigins =
         .filter(Boolean)
     : fallbackOrigins;
 
+const allowedOrigins = [
+  ...new Set([...fallbackOrigins, ...productionOrigins, ...configuredOrigins]),
+];
+
 const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
-const configuredVercelProjects = configuredOrigins
+const configuredVercelProjects = allowedOrigins
   .map((origin) => {
     try {
       const { hostname } = new URL(origin);
@@ -61,7 +69,7 @@ const isAllowedVercelPreviewOrigin = (origin) => {
 const isAllowedOrigin = (origin) =>
   !origin ||
   allowAllOrigins ||
-  configuredOrigins.includes(origin) ||
+  allowedOrigins.includes(origin) ||
   isAllowedVercelPreviewOrigin(origin);
 
 export const corsOptions = {

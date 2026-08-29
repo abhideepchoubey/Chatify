@@ -17,7 +17,7 @@ services:
       - key: NODE_ENV
         value: production
       - key: CORS_ORIGIN
-        value: https://chatify-abhideep.vercel.app
+        value: https://chatify-abhideep.vercel.app,https://chatify.abhideep.shop
       - key: MONGO_URI
         sync: false
       - key: ACCESS_TOKEN_SECRET
