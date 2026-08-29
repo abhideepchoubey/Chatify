@@ -8,14 +8,14 @@ function SplashScreen({ backendStatus = "connecting", onRetry }) {
 
   return (
     <div className="flex min-h-screen items-center justify-center px-4 py-10">
-      <div className="panel-surface w-full max-w-md rounded-[28px] px-6 py-10 text-center shadow-glow">
-        <div className="mx-auto mb-4 h-14 w-14 animate-pulse rounded-2xl bg-gradient-to-br from-cyan-400 to-sky-600" />
-        <h1 className="font-display text-2xl font-semibold text-white">
+      <div className="panel-surface w-full max-w-md rounded-[30px] px-6 py-10 text-center">
+        <div className="mx-auto mb-5 h-14 w-14 animate-pulse rounded-[20px_20px_20px_7px] bg-[var(--moss)]" />
+        <h1 className="font-display text-3xl font-semibold text-primary">
           {isUnavailable
             ? "The server is taking longer"
             : "Preparing your workspace"}
         </h1>
-        <p className="mt-2 text-sm text-slate-300">
+        <p className="mt-3 text-sm leading-6 text-secondary">
           {isUnavailable
             ? "Chatify could not reach the backend yet. Try the connection again."
             : backendStatus === "waking"
@@ -26,7 +26,7 @@ function SplashScreen({ backendStatus = "connecting", onRetry }) {
           <button
             type="button"
             onClick={onRetry}
-            className="mt-6 rounded-full bg-gradient-to-r from-cyan-400 to-blue-600 px-6 py-3 text-sm font-semibold text-white"
+            className="primary-button mt-6 px-6 py-3 text-sm"
           >
             Try again
           </button>

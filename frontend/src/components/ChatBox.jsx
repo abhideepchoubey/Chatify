@@ -1,7 +1,41 @@
 import { useEffect, useRef } from "react";
 import MessageBubble from "./MessageBubble";
 import InputBar from "./InputBar";
+import ThemeToggle from "./ThemeToggle";
 import { getChatGradient, getChatInitials } from "../utils/chat";
+
+function BackIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" aria-hidden="true">
+      <path
+        d="m14 6-6 6 6 6M8 12h11"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function ConversationIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className="h-7 w-7" aria-hidden="true">
+      <path
+        d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8a2.5 2.5 0 0 1-2.5 2.5H10l-5 4v-4.7A2.5 2.5 0 0 1 4 13.5v-8Z"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M8 8h8M8 11.5h5"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
 
 export default function ChatBox({
   chat,
@@ -15,7 +49,8 @@ export default function ChatBox({
   loadingError,
   typingUser,
   connectionState,
-  onOpenSidebar,
+  onBack,
+  isMobileChatOpen,
   onOpenAddFriend,
   onOpenCreateGroup,
   selectedFiles,
@@ -30,31 +65,38 @@ export default function ChatBox({
     endRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, typingUser]);
 
+  const responsiveClass = isMobileChatOpen ? "flex" : "hidden sm:flex";
+
   if (!chat) {
     return (
-      <div className="panel-surface flex min-h-0 min-w-0 flex-1 flex-col items-center justify-center rounded-[30px] px-6 text-center">
-        <div className="mx-auto flex h-20 w-20 animate-float-slow items-center justify-center rounded-[28px] bg-gradient-to-br from-cyan-400/20 to-blue-600/20 text-3xl text-cyan-100">
-          +
+      <div
+        className={[
+          "panel-surface min-h-0 min-w-0 flex-1 flex-col items-center justify-center rounded-[30px] px-6 text-center",
+          responsiveClass,
+        ].join(" ")}
+      >
+        <div className="flex h-20 w-20 items-center justify-center rounded-[30px_30px_30px_10px] bg-[var(--surface-raised)] text-[var(--moss)]">
+          <ConversationIcon />
         </div>
-        <h2 className="mt-6 font-display text-3xl font-semibold text-white">
-          Build your chat circle
+        <h2 className="mt-6 font-display text-3xl font-semibold text-primary">
+          Choose a conversation
         </h2>
-        <p className="mt-3 max-w-xl text-sm leading-7 text-slate-300">
-          Add friends for direct conversations, create shared group spaces, and
-          send image messages once a chat is live.
+        <p className="mt-3 max-w-lg text-sm leading-7 text-secondary">
+          Select a chat from the conversation list, add a friend, or create a
+          group.
         </p>
         <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
           <button
             type="button"
             onClick={onOpenAddFriend}
-            className="rounded-[22px] border border-white/10 bg-white/5 px-5 py-3 text-sm font-medium text-white transition hover:bg-white/10"
+            className="secondary-button px-5 py-3 text-sm"
           >
             Add friend
           </button>
           <button
             type="button"
             onClick={onOpenCreateGroup}
-            className="rounded-[22px] bg-gradient-to-r from-cyan-400 via-sky-500 to-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-cyan-950/40 transition hover:translate-y-[-1px]"
+            className="primary-button px-5 py-3 text-sm"
           >
             Create group
           </button>
@@ -64,39 +106,42 @@ export default function ChatBox({
   }
 
   const gradient = getChatGradient(chat.id);
+  const statusTone =
+    connectionState === "Live"
+      ? "bg-[var(--positive)]"
+      : connectionState === "Connecting"
+        ? "bg-[var(--warning)]"
+        : "bg-[var(--danger)]";
 
   return (
-    <div className="panel-surface flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-[30px]">
-      <header className="shrink-0 border-b border-white/10 bg-slate-950/80 px-4 py-4 sm:px-6">
-        <div className="flex items-center justify-between gap-4">
+    <div
+      className={[
+        "panel-surface min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-[30px]",
+        responsiveClass,
+      ].join(" ")}
+    >
+      <header className="shrink-0 border-b border-[var(--line)] bg-[var(--surface)] px-3 py-3 sm:px-5 sm:py-4">
+        <div className="flex items-center justify-between gap-3">
           <div className="flex min-w-0 items-center gap-3">
-            <button type="button" onClick={onOpenSidebar} className="hidden">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth="1.5"
-                stroke="currentColor"
-                className="h-5 w-5"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M3.75 5.25h16.5m-16.5 6h16.5m-16.5 6h16.5"
-                />
-              </svg>
+            <button
+              type="button"
+              onClick={onBack}
+              className="icon-button h-10 w-10 sm:hidden"
+              aria-label="Back to conversations"
+            >
+              <BackIcon />
             </button>
 
             <div
               className={[
-                "flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br text-sm font-semibold text-white",
+                "flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-[17px_17px_17px_6px] bg-gradient-to-br text-sm font-semibold text-[var(--canvas)] sm:h-12 sm:w-12",
                 gradient,
               ].join(" ")}
             >
               {chat.imageUrl ? (
                 <img
                   src={chat.imageUrl}
-                  alt={chat.name}
+                  alt=""
                   className="h-full w-full object-cover"
                 />
               ) : (
@@ -105,63 +150,60 @@ export default function ChatBox({
             </div>
 
             <div className="min-w-0">
-              <h2 className="truncate font-display text-lg font-semibold text-white">
+              <h2 className="truncate font-display text-lg font-semibold text-primary">
                 {chat.name}
               </h2>
-              <p className="truncate text-sm text-slate-300">
+              <p className="truncate text-xs text-secondary sm:text-sm">
                 {chat.description || chat.subtitle}
               </p>
             </div>
           </div>
 
-          <div className="hidden rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs text-slate-300 sm:flex sm:items-center sm:gap-2">
-            <span
-              className={[
-                "h-2.5 w-2.5 rounded-full",
-                connectionState === "Live"
-                  ? "bg-emerald-400"
-                  : connectionState === "Connecting"
-                    ? "bg-amber-400"
-                    : "bg-rose-400",
-              ].join(" ")}
-            />
-            <span>{connectionState}</span>
+          <div className="flex items-center gap-2">
+            <div className="surface-muted hidden items-center gap-2 rounded-full px-4 py-2 text-xs text-secondary sm:flex">
+              <span
+                className={["h-2.5 w-2.5 rounded-full", statusTone].join(" ")}
+              />
+              <span>{connectionState}</span>
+            </div>
+            <div className="sm:hidden">
+              <ThemeToggle compact />
+            </div>
           </div>
         </div>
       </header>
 
       <div className="relative min-h-0 flex-1 overflow-hidden">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(34,211,238,0.08),_transparent_28%),radial-gradient(circle_at_bottom_right,_rgba(59,130,246,0.10),_transparent_30%)]" />
+        <div className="conversation-canvas pointer-events-none absolute inset-0" />
 
-        <div className="scrollbar-thin relative flex h-full flex-col overflow-y-auto px-4 py-6 sm:px-6">
+        <div className="scrollbar-thin relative flex h-full flex-col overflow-y-auto px-3 py-5 sm:px-6 sm:py-6">
           {isLoading ? (
             <div className="space-y-3">
               {[0, 1, 2].map((item) => (
                 <div
                   key={item}
-                  className="h-20 animate-pulse rounded-[24px] border border-white/10 bg-white/5"
+                  className="surface-muted h-20 animate-pulse rounded-[24px]"
                 />
               ))}
             </div>
           ) : null}
 
           {!isLoading && loadingError ? (
-            <div className="mx-auto w-full max-w-lg rounded-[24px] border border-rose-400/20 bg-rose-500/10 px-5 py-4 text-center text-sm text-rose-100">
+            <div className="danger-banner mx-auto w-full max-w-lg px-5 py-4 text-center text-sm">
               {loadingError}
             </div>
           ) : null}
 
           {!isLoading && !loadingError && messages.length === 0 ? (
-            <div className="m-auto max-w-md rounded-[28px] border border-white/10 bg-white/5 px-6 py-8 text-center">
-              <div className="mx-auto mb-4 flex h-16 w-16 animate-float-slow items-center justify-center rounded-3xl bg-gradient-to-br from-cyan-400/20 to-blue-600/20">
-                <span className="text-2xl">#</span>
+            <div className="surface-muted m-auto max-w-md rounded-[28px] px-6 py-8 text-center">
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-[24px_24px_24px_8px] bg-[var(--surface-raised)] text-[var(--moss)]">
+                <ConversationIcon />
               </div>
-              <h3 className="font-display text-xl font-semibold text-white">
+              <h3 className="font-display text-2xl font-semibold text-primary">
                 Start the conversation
               </h3>
-              <p className="mt-2 text-sm leading-6 text-slate-300">
-                This chat is ready. Send a message or upload a photo to bring it
-                to life.
+              <p className="mt-2 text-sm leading-6 text-secondary">
+                Send a message or attach files when you are ready.
               </p>
             </div>
           ) : null}
@@ -182,11 +224,10 @@ export default function ChatBox({
           ) : null}
 
           {typingUser ? (
-            <div className="mt-4 self-start rounded-full border border-white/10 bg-white/8 px-4 py-2 text-xs text-slate-300 backdrop-blur-xl">
+            <div className="surface-muted mt-4 self-start rounded-full px-4 py-2 text-xs text-secondary">
               {typingUser} is typing...
             </div>
           ) : null}
-
           <div ref={endRef} />
         </div>
       </div>

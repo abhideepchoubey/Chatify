@@ -46,8 +46,8 @@ export default function InputBar({
   };
 
   return (
-    <div className="shrink-0 border-t border-white/10 bg-slate-950/65 p-4 sm:p-5">
-      <div className="panel-surface flex items-end gap-3 rounded-[28px] border border-white/10 bg-white/5 px-4 py-3">
+    <div className="shrink-0 border-t border-[var(--line)] bg-[var(--surface)] p-3 sm:p-4">
+      <div className="surface-muted flex items-end gap-2 rounded-[26px] px-3 py-2.5 sm:gap-3 sm:px-4 sm:py-3">
         <input
           ref={fileInputRef}
           type="file"
@@ -62,7 +62,8 @@ export default function InputBar({
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
-          className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-slate-200 transition hover:bg-white/10"
+          className="icon-button h-11 w-11 sm:h-12 sm:w-12"
+          aria-label="Attach files"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -75,7 +76,7 @@ export default function InputBar({
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
-              d="M6.75 7.5h10.5m-10.5 4.5h10.5m-10.5 4.5h6.75M3.75 5.25A2.25 2.25 0 0 1 6 3h12a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 18 21H6a2.25 2.25 0 0 1-2.25-2.25V5.25Z"
+              d="m12.7 7.3-5.9 5.9a3 3 0 1 0 4.2 4.2l7.3-7.3a5 5 0 0 0-7.1-7.1L4.7 9.5"
             />
           </svg>
         </button>
@@ -87,14 +88,15 @@ export default function InputBar({
           onChange={(event) => onChange(event.target.value)}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
-          className="max-h-32 min-h-[28px] flex-1 resize-none bg-transparent text-sm leading-7 text-white outline-none placeholder:text-slate-500"
+          className="max-h-32 min-h-[28px] flex-1 resize-none bg-transparent text-sm leading-7 text-primary outline-none placeholder:text-[var(--text-faint)]"
         />
 
         <button
           type="button"
           onClick={onSend}
           disabled={disabled}
-          className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-400 via-sky-500 to-blue-600 text-white shadow-lg shadow-cyan-950/50 transition hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-50"
+          className="primary-button h-11 w-11 shrink-0 p-0 sm:h-12 sm:w-12 disabled:cursor-not-allowed disabled:opacity-50"
+          aria-label="Send message"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -108,9 +110,9 @@ export default function InputBar({
       </div>
 
       {selectedFiles.length > 0 ? (
-        <div className="mt-3 rounded-[22px] border border-white/10 bg-white/5 p-3">
+        <div className="surface-muted mt-3 rounded-[22px] p-3">
           <div className="mb-3 flex items-center justify-between gap-3">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-300">
+            <p className="text-xs font-semibold text-secondary">
               {isUploadingImage
                 ? "Uploading files..."
                 : `${selectedFiles.length} file${selectedFiles.length === 1 ? "" : "s"} ready`}
@@ -118,7 +120,7 @@ export default function InputBar({
             <button
               type="button"
               onClick={onClearFiles}
-              className="text-xs font-medium text-slate-400 transition hover:text-white"
+              className="text-xs font-medium text-tertiary transition hover:text-primary"
             >
               Clear all
             </button>
@@ -128,7 +130,7 @@ export default function InputBar({
             {selectedFiles.map((entry, index) => (
               <div
                 key={`${entry.file.name}-${entry.file.lastModified}-${index}`}
-                className="flex min-w-[13rem] items-center gap-3 rounded-[18px] border border-white/10 bg-slate-950/35 p-2"
+                className="flex min-w-[13rem] items-center gap-3 rounded-[18px] border border-[var(--line)] bg-[var(--surface-raised)] p-2"
               >
                 {entry.preview ? (
                   <img
@@ -137,22 +139,22 @@ export default function InputBar({
                     className="h-11 w-11 shrink-0 rounded-xl object-cover"
                   />
                 ) : (
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-cyan-400/10 text-xs font-bold uppercase text-cyan-200">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[var(--moss)] text-xs font-bold uppercase text-[var(--canvas)]">
                     {entry.file.name.split(".").pop()?.slice(0, 4) || "File"}
                   </div>
                 )}
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-xs font-medium text-white">
+                  <p className="truncate text-xs font-medium text-primary">
                     {entry.file.name}
                   </p>
-                  <p className="mt-1 text-[11px] text-slate-400">
+                  <p className="mt-1 text-[11px] text-tertiary">
                     {formatFileSize(entry.file.size)}
                   </p>
                 </div>
                 <button
                   type="button"
                   onClick={() => onRemoveFile(index)}
-                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/10 text-sm text-slate-300 transition hover:bg-white/10 hover:text-white"
+                  className="icon-button h-8 w-8 text-sm"
                   aria-label={`Remove ${entry.file.name}`}
                 >
                   x

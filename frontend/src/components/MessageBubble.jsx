@@ -111,7 +111,7 @@ function AttachmentCard({ attachment, messageText }) {
   };
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-white/10 bg-slate-950/20">
+    <div className="overflow-hidden rounded-2xl border border-[var(--line)] bg-[var(--surface)] text-primary">
       {isImage ? (
         <a href={attachment.url} target="_blank" rel="noreferrer">
           <img
@@ -126,16 +126,16 @@ function AttachmentCard({ attachment, messageText }) {
           href={attachment.url}
           target="_blank"
           rel="noreferrer"
-          className="flex items-center gap-3 p-4 transition hover:bg-white/5"
+          className="flex items-center gap-3 p-4 transition hover:bg-[var(--surface-raised)]"
         >
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-cyan-400/15 text-xs font-bold uppercase text-cyan-100">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[18px_18px_18px_7px] bg-[var(--moss)] text-xs font-bold uppercase text-[var(--canvas)]">
             {extension}
           </div>
           <div className="min-w-0">
-            <p className="truncate text-sm font-semibold text-white">
+            <p className="truncate text-sm font-semibold text-primary">
               {attachment.name || "Shared file"}
             </p>
-            <p className="mt-1 text-xs text-slate-400">
+            <p className="mt-1 text-xs text-tertiary">
               {formatFileSize(attachment.size)}
             </p>
           </div>
@@ -143,21 +143,21 @@ function AttachmentCard({ attachment, messageText }) {
       )}
 
       <div className="flex flex-wrap items-center justify-between gap-3 px-3 py-2">
-        <p className="min-w-0 flex-1 truncate text-xs text-slate-200/80">
+        <p className="min-w-0 flex-1 truncate text-xs text-secondary">
           {attachment.name || "Shared file"}
         </p>
         <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={handleShare}
-            className="rounded-full border border-white/10 bg-white/10 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-white transition hover:bg-white/15"
+            className="secondary-button px-3 py-1.5 text-[11px]"
           >
             {shareFeedback || "Share"}
           </button>
           <button
             type="button"
             onClick={handleDownload}
-            className="rounded-full border border-white/10 bg-white/10 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-white transition hover:bg-white/15"
+            className="secondary-button px-3 py-1.5 text-[11px]"
           >
             {isDownloading ? "Saving" : "Download"}
           </button>
@@ -183,14 +183,14 @@ export default function MessageBubble({ message, currentUser }) {
     >
       <div
         className={[
-          "max-w-[min(88%,42rem)] rounded-[24px] px-4 py-3 shadow-lg ring-1 ring-inset",
+          "soft-shadow max-w-[min(90%,42rem)] rounded-[24px] px-4 py-3",
           isOwnMessage
-            ? "rounded-br-md bg-gradient-to-br from-cyan-400 via-sky-500 to-blue-600 text-white ring-cyan-300/30"
-            : "rounded-bl-md bg-white/8 text-slate-100 ring-white/10 backdrop-blur-xl",
+            ? "rounded-br-md bg-[var(--moss)] text-[var(--canvas)]"
+            : "rounded-bl-md border border-[var(--line)] bg-[var(--surface-raised)] text-primary backdrop-blur-xl",
         ].join(" ")}
       >
         {!isOwnMessage ? (
-          <p className="mb-1.5 text-xs font-semibold uppercase tracking-[0.22em] text-cyan-200/85">
+          <p className="mb-1.5 text-xs font-semibold text-[var(--terracotta)]">
             {message.sender}
           </p>
         ) : null}
@@ -216,7 +216,7 @@ export default function MessageBubble({ message, currentUser }) {
         <p
           className={[
             "mt-2 text-[11px]",
-            isOwnMessage ? "text-white/70" : "text-slate-400",
+            isOwnMessage ? "opacity-70" : "text-tertiary",
           ].join(" ")}
         >
           {sentAt}

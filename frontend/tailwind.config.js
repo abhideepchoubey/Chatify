@@ -4,8 +4,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["Space Grotesk", "Segoe UI", "sans-serif"],
-        display: ["Sora", "Space Grotesk", "Segoe UI", "sans-serif"],
+        sans: ["Epilogue", "Segoe UI", "sans-serif"],
+        display: ["Fraunces", "Georgia", "serif"],
       },
       animation: {
         "message-in": "messageIn 260ms ease-out both",
@@ -32,7 +32,7 @@ export default {
         },
       },
       boxShadow: {
-        glow: "0 30px 120px -48px rgba(14, 165, 233, 0.5)",
+        glow: "0 28px 80px -42px rgba(34, 53, 38, 0.52)",
       },
     },
   },

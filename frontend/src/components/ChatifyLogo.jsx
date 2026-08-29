@@ -1,59 +1,36 @@
-export default function ChatifyLogo({
-  tone = "dark",
-  className = "",
-  compact = false,
-}) {
-  const isLight = tone === "light";
-  const accent = isLight
-    ? "from-sky-500 via-cyan-500 to-emerald-500"
-    : "from-cyan-300 via-sky-400 to-blue-500";
-  const textTone = isLight ? "text-slate-950" : "text-white";
-  const subTone = isLight ? "text-slate-600" : "text-slate-300";
-
+export default function ChatifyLogo({ className = "", compact = false }) {
   return (
     <div className={["flex items-center gap-3", className].join(" ")}>
-      <div
-        className={[
-          "relative flex h-12 w-12 items-center justify-center rounded-[18px] bg-gradient-to-br shadow-lg shadow-cyan-950/20",
-          accent,
-        ].join(" ")}
-      >
+      <div className="soft-shadow relative flex h-12 w-12 items-center justify-center overflow-hidden rounded-[18px_18px_18px_7px] bg-[var(--moss)]">
         <svg
-          xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 48 48"
-          className="h-8 w-8 text-white"
+          className="h-9 w-9"
           fill="none"
+          aria-hidden="true"
         >
           <path
-            d="M11 13.5C11 10.4624 13.4624 8 16.5 8H31.5C34.5376 8 37 10.4624 37 13.5V23.5C37 26.5376 34.5376 29 31.5 29H25.8L18.5 35.2C17.5357 36.0189 16 35.3338 16 34.0685V29H16.5C13.4624 29 11 26.5376 11 23.5V13.5Z"
-            fill="currentColor"
-            fillOpacity="0.95"
+            d="M10.5 13.5A5.5 5.5 0 0 1 16 8h16a5.5 5.5 0 0 1 5.5 5.5v10A5.5 5.5 0 0 1 32 29h-7l-7.6 6.2c-.9.8-2.4.1-2.4-1.1V29A5.5 5.5 0 0 1 10.5 23.5v-10Z"
+            fill="var(--canvas)"
           />
           <path
-            d="M16 18C16 16.8954 16.8954 16 18 16H30C31.1046 16 32 16.8954 32 18C32 19.1046 31.1046 20 30 20H18C16.8954 20 16 19.1046 16 18ZM16 24C16 22.8954 16.8954 22 18 22H25C26.1046 22 27 22.8954 27 24C27 25.1046 26.1046 26 25 26H18C16.8954 26 16 25.1046 16 24Z"
-            fill="#0F172A"
-            fillOpacity="0.28"
+            d="M17 20.8c5.7.1 9.6-2.2 13-6.1-.1 6.1-3.6 10-10.3 10.6"
+            stroke="var(--terracotta)"
+            strokeWidth="2.2"
+            strokeLinecap="round"
+          />
+          <path
+            d="M23.5 19.1c-.3 3.1-1.9 5.7-4.8 7.7"
+            stroke="var(--terracotta)"
+            strokeWidth="2.2"
+            strokeLinecap="round"
           />
         </svg>
       </div>
 
       {!compact ? (
-        <div>
-          <p
-            className={["font-display text-xl font-semibold", textTone].join(
-              " "
-            )}
-          >
-            Chatify
-          </p>
-          <p
-            className={["text-xs uppercase tracking-[0.3em]", subTone].join(
-              " "
-            )}
-          >
-            Private Realtime Chat
-          </p>
-        </div>
+        <span className="font-display text-[1.7rem] font-semibold tracking-[-0.03em] text-primary">
+          Chatify
+        </span>
       ) : null}
     </div>
   );

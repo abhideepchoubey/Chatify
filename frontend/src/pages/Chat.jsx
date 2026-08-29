@@ -82,7 +82,7 @@ export default function Chat() {
   const [roomErrors, setRoomErrors] = useState({});
   const [connectionState, setConnectionState] = useState("Connecting");
   const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isMobileChatOpen, setIsMobileChatOpen] = useState(false);
   const [isBootstrapping, setIsBootstrapping] = useState(true);
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
@@ -275,7 +275,6 @@ export default function Chat() {
 
   useEffect(() => {
     activeRoomRef.current = activeChat?.room || "";
-    setIsSidebarOpen(false);
     clearSelectedFiles();
 
     if (!socket.connected) {
@@ -683,17 +682,19 @@ export default function Chat() {
 
   return (
     <>
-      <div className="relative h-dvh overflow-hidden p-3 sm:p-5">
-        <div className="relative mx-auto flex h-full min-h-0 max-w-[1800px] flex-col gap-3 sm:flex-row sm:gap-4">
+      <div className="relative h-dvh overflow-hidden p-2 sm:p-4 lg:p-5">
+        <div className="relative mx-auto flex h-full min-h-0 max-w-[1800px] gap-3 sm:gap-4">
           <Sidebar
             user={user}
             chats={chats}
             activeChatId={activeChatId}
-            onSelectChat={setActiveChatId}
+            onSelectChat={(chatId) => {
+              setActiveChatId(chatId);
+              setIsMobileChatOpen(true);
+            }}
             onLogout={handleLogout}
             isLoggingOut={isLoggingOut}
             connectionState={connectionState}
-            onClose={() => setIsSidebarOpen(false)}
             onOpenAddFriend={() => {
               setAddFriendError("");
               setUserSearchQuery("");
@@ -707,16 +708,17 @@ export default function Chat() {
             }}
             onOpenRequests={handleOpenRequests}
             requestCount={requests.length}
+            isMobileChatOpen={isMobileChatOpen}
           />
 
           {isBootstrapping ? (
-            <div className="panel-surface flex min-h-0 flex-1 items-center justify-center rounded-[30px]">
+            <div className="panel-surface hidden min-h-0 flex-1 items-center justify-center rounded-[30px] sm:flex">
               <div className="text-center">
-                <div className="mx-auto mb-4 h-14 w-14 animate-pulse rounded-2xl bg-gradient-to-br from-cyan-400 to-sky-600" />
-                <p className="font-display text-xl font-semibold text-white">
+                <div className="mx-auto mb-4 h-14 w-14 animate-pulse rounded-[20px_20px_20px_7px] bg-[var(--moss)]" />
+                <p className="font-display text-xl font-semibold text-primary">
                   Loading chats
                 </p>
-                <p className="mt-2 text-sm text-slate-300">
+                <p className="mt-2 text-sm text-secondary">
                   Syncing friends, groups, and recent messages.
                 </p>
               </div>
@@ -734,7 +736,8 @@ export default function Chat() {
               loadingError={loadingError}
               typingUser={typingUser}
               connectionState={connectionState}
-              onOpenSidebar={() => setIsSidebarOpen(true)}
+              onBack={() => setIsMobileChatOpen(false)}
+              isMobileChatOpen={isMobileChatOpen}
               onOpenAddFriend={() => {
                 setAddFriendError("");
                 setUserSearchQuery("");

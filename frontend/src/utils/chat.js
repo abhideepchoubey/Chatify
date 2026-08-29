@@ -1,9 +1,9 @@
 const gradients = [
-  "from-cyan-400 via-sky-500 to-blue-600",
-  "from-emerald-400 via-teal-500 to-cyan-600",
-  "from-fuchsia-400 via-violet-500 to-indigo-600",
-  "from-amber-400 via-orange-500 to-rose-600",
-  "from-lime-400 via-green-500 to-emerald-600",
+  "from-[var(--moss)] via-[var(--sage)] to-[var(--clay)]",
+  "from-[var(--terracotta)] via-[var(--clay)] to-[var(--ochre)]",
+  "from-[var(--sage)] via-[var(--moss)] to-[var(--clay)]",
+  "from-[var(--ochre)] via-[var(--clay)] to-[var(--terracotta)]",
+  "from-[var(--clay)] via-[var(--sage)] to-[var(--moss)]",
 ];
 
 export const getChatGradient = (seed = "") => {
