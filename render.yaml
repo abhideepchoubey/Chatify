@@ -2,6 +2,7 @@ services:
   - type: web
     runtime: node
     name: chatify-backend
+    branch: main
     plan: free
     rootDir: backend
     buildCommand: npm install
